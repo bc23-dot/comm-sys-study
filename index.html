@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>通信系统导论 · Communication Systems Study Notes</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+:root {
+    --bg: #f8fafc; --text: #1e293b; --card: #ffffff; --border: #e2e8f0;
+    --primary: #6366f1; --primary-light: #eef2ff; --accent: #f59e0b;
+    --sidebar-bg: #1e293b; --sidebar-text: #cbd5e1; --sidebar-active: #6366f1;
+    --code-bg: #f1f5f9; --shadow: 0 1px 3px rgba(0,0,0,.08);
+    --heading: #0f172a; --muted: #64748b;
+}
+[data-theme="dark"] {
+    --bg: #0f172a; --text: #e2e8f0; --card: #1e293b; --border: #334155;
+    --primary: #818cf8; --primary-light: #1e1b4b; --accent: #fbbf24;
+    --sidebar-bg: #020617; --sidebar-text: #94a3b8; --sidebar-active: #818cf8;
+    --code-bg: #1e293b; --shadow: 0 1px 3px rgba(0,0,0,.3);
+    --heading: #f1f5f9; --muted: #94a3b8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; display: flex; min-height: 100vh; }
+a { color: var(--primary); text-decoration: none; }
+
+/* Sidebar */
+.sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100; transition: transform .3s; padding: 16px 0; flex-shrink: 0; }
+.sidebar-header { padding: 0 20px 16px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 8px; }
+.sidebar-header h2 { color: #fff; font-size: 15px; font-weight: 600; }
+.sidebar-header p { font-size: 11px; opacity: .6; margin-top: 2px; }
+.sidebar nav { padding: 0 12px; }
+.sidebar .chap-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--sidebar-text); transition: all .2s; margin: 2px 0; }
+.sidebar .chap-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+.sidebar .chap-link.active { background: var(--sidebar-active); color: #fff; }
+.sidebar .chap-num { width: 24px; height: 24px; border-radius: 6px; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.sidebar .chap-link.active .chap-num { background: rgba(255,255,255,.3); }
+
+/* Controls */
+.sidebar-controls { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,.1); margin-top: 8px; display: flex; gap: 8px; }
+.sidebar-controls button { flex: 1; padding: 8px; border: 1px solid rgba(255,255,255,.15); border-radius: 6px; background: transparent; color: var(--sidebar-text); cursor: pointer; font-size: 12px; transition: .2s; }
+.sidebar-controls button:hover { background: rgba(255,255,255,.08); color: #fff; }
+
+/* Main */
+.main { margin-left: 280px; flex: 1; padding: 32px 40px; max-width: 960px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.topbar h1 { font-size: 24px; font-weight: 700; color: var(--heading); }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; font-size: 13px; transition: .2s; display: flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--primary); color: var(--primary); }
+.btn-icon { width: 36px; height: 36px; padding: 0; display: flex; align-items: center; justify-content: center; }
+
+/* Search */
+.search-wrap { margin-bottom: 24px; }
+.search-wrap input { width: 100%; padding: 12px 16px; border-radius: 10px; border: 2px solid var(--border); background: var(--card); color: var(--text); font-size: 14px; outline: none; transition: .2s; }
+.search-wrap input:focus { border-color: var(--primary); }
+.search-info { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* Chapter */
+.chapter { margin-bottom: 48px; scroll-margin-top: 80px; }
+.chapter-header { margin-bottom: 20px; }
+.chapter-tag { display: inline-block; background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-bottom: 8px; }
+.chapter-title { font-size: 22px; font-weight: 700; color: var(--heading); margin-bottom: 4px; }
+.chapter-subtitle { font-size: 15px; color: var(--muted); }
+.overview-card { background: var(--primary-light); border: 1px solid var(--primary); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+.overview-card .label { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.overview-card p { font-size: 13px; color: var(--text); margin: 4px 0; }
+
+/* Section */
+.section { margin-bottom: 20px; }
+.section-title { font-size: 16px; font-weight: 700; color: var(--heading); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.section-title::before { content: ''; width: 4px; height: 18px; background: var(--primary); border-radius: 2px; }
+.items { display: grid; gap: 6px; }
+.item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; display: flex; gap: 8px; align-items: flex-start; transition: .15s; }
+.item:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.item .cn { flex: 1; color: var(--text); }
+.item .en { flex: 1; color: var(--muted); font-size: 12px; padding-left: 8px; border-left: 1px solid var(--border); }
+.item .check { flex-shrink: 0; width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: .2s; margin-top: 1px; }
+.item .check.done { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* Formula */
+.formulas { display: grid; gap: 10px; margin-top: 12px; }
+.formula-card { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+.formula-card .fname { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+.formula-card .katex { font-size: 1.05em; }
+
+/* Progress */
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin: 8px 0 20px; }
+.progress-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width .3s; }
+
+/* Menu toggle mobile */
+.menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; width: 40px; height: 40px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); cursor: pointer; font-size: 20px; align-items: center; justify-content: center; box-shadow: var(--shadow); }
+
+@media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 16px; }
+    .menu-toggle { display: flex; }
+    .item { flex-direction: column; }
+    .item .en { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 4px; }
+    .topbar h1 { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<aside class="sidebar">
+<div class="sidebar-header"><h2>📡 通信系统导论</h2><p>Communication Systems</p></div>
+<nav><a class="chap-link" href="#lec1" data-target="lec1"><span class="chap-num">1</span>通信基础</a>
+<a class="chap-link" href="#lec2" data-target="lec2"><span class="chap-num">2</span>信号与传输</a>
+<a class="chap-link" href="#lec3" data-target="lec3"><span class="chap-num">3</span>模拟调制与数字调制基础</a>
+<a class="chap-link" href="#lec4" data-target="lec4"><span class="chap-num">4</span>数字调制进阶</a>
+<a class="chap-link" href="#lec5" data-target="lec5"><span class="chap-num">5</span>模数转换与数数转换</a>
+<a class="chap-link" href="#lec6" data-target="lec6"><span class="chap-num">6</span>广播与多址接入</a>
+<a class="chap-link" href="#lec12" data-target="lec12"><span class="chap-num">12</span>密码学与信息安全</a>
+<a class="chap-link" href="#lec13" data-target="lec13"><span class="chap-num">13</span>卫星通信</a>
+<a class="chap-link" href="#lec14" data-target="lec14"><span class="chap-num">14</span>卫星导航</a></nav>
+<a class="chap-link" href="#lec7" data-target="lec7"><span class="chap-num">12</span>信息论基础</a>
+<a class="chap-link" href="#lec8" data-target="lec8"><span class="chap-num">13</span>数据压缩技术</a>
+<a class="chap-link" href="#lec9" data-target="lec9"><span class="chap-num">14</span>图像与视频压缩</a>
+<a class="chap-link" href="#lec10" data-target="lec10"><span class="chap-num">10</span>语音处理与编码</a>
+<a class="chap-link" href="#lec11" data-target="lec11"><span class="chap-num">11</span>差错控制编码</a>
+<div class="sidebar-controls">
+<button onclick="toggleTheme()" id="themeBtn">🌙 暗色</button>
+<button onclick="resetProgress()">↺ 重置进度</button>
+</div>
+</aside>
+<main class="main">
+<div class="topbar">
+<h1>📡 通信系统导论学习笔记</h1>
+<div class="topbar-actions"><button class="btn" onclick="toggleAllProgress()">全章标记/取消</button></div>
+</div>
+<div class="search-wrap"><input type="text" id="searchBox" placeholder="🔍 搜索知识点（支持中英文）..." oninput="doSearch()"><div class="search-info" id="searchInfo"></div></div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<section class="chapter" id="lec1">
+<div class="chapter-header"><span class="chapter-tag">第1课 Lecture 1</span>
+<h2 class="chapter-title">📋 通信基础</h2>
+<div class="chapter-subtitle">Fundamentals of Communication</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>通信是从源端到目的端交换信息的过程。本课介绍通信系统的基本组成、信号类型、信道特性及信号损伤。</p><p style="color:var(--muted)">Communication is the process of exchanging information from a source to a destination. This lecture introduces the basic components of communication systems, signal types, channel characteristics, and signal impairments.</p></div>
+<div class="section"><div class="section-title">通信系统要素 <span style="font-weight:400;color:var(--muted);font-size:13px;">Elements of a Communication System</span></div><div class="items"><div class="item" data-keywords="<b>信息源</b> — 产生待传输的消息 <b>Information Source</b> — Produces the message to be transmitted"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>信息源</b> — 产生待传输的消息</span><span class="en"><b>Information Source</b> — Produces the message to be transmitted</span></div>
+<div class="item" data-keywords="<b>输入换能器</b> — 将一种能量转换为另一种（如麦克风：声→电） <b>Input Transducer</b> — Converts one form of energy to another (e.g. microphone: acoustic → electrical)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>输入换能器</b> — 将一种能量转换为另一种（如麦克风：声→电）</span><span class="en"><b>Input Transducer</b> — Converts one form of energy to another (e.g. microphone: acoustic → electrical)</span></div>
+<div class="item" data-keywords="<b>发射机</b> — 对信号进行调制和放大 <b>Transmitter</b> — Modulates and amplifies the signal"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>发射机</b> — 对信号进行调制和放大</span><span class="en"><b>Transmitter</b> — Modulates and amplifies the signal</span></div>
+<div class="item" data-keywords="<b>信道</b> — 信息从发射机到接收机的传输媒介 <b>Channel</b> — The medium over which information passes from transmitter to receiver"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>信道</b> — 信息从发射机到接收机的传输媒介</span><span class="en"><b>Channel</b> — The medium over which information passes from transmitter to receiver</span></div>
+<div class="item" data-keywords="<b>接收机</b> — 接收失真信号，进行解调、放大和滤波 <b>Receiver</b> — Receives the distorted signal, demodulates, amplifies, and filters"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>接收机</b> — 接收失真信号，进行解调、放大和滤波</span><span class="en"><b>Receiver</b> — Receives the distorted signal, demodulates, amplifies, and filters</span></div>
+<div class="item" data-keywords="<b>信息接收端</b> — 信号的最终目的地（音频/视频输出、存储设备） <b>Information Sink</b> — Final destination (audio/video output, storage devices)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>信息接收端</b> — 信号的最终目的地（音频/视频输出、存储设备）</span><span class="en"><b>Information Sink</b> — Final destination (audio/video output, storage devices)</span></div></div></div>
+<div class="section"><div class="section-title">通信系统类型 <span style="font-weight:400;color:var(--muted);font-size:13px;">Types of Communication Systems</span></div><div class="items"><div class="item" data-keywords="<b>单工 (Simplex)</b> — 仅单向通信，如广播电视 <b>Simplex</b> — One direction only, e.g. radio/TV broadcasting"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>单工 (Simplex)</b> — 仅单向通信，如广播电视</span><span class="en"><b>Simplex</b> — One direction only, e.g. radio/TV broadcasting</span></div>
+<div class="item" data-keywords="<b>半双工 (Half-Duplex)</b> — 双向但不能同时，如对讲机 <b>Half-Duplex</b> — Both directions but not simultaneously, e.g. walkie-talkie"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>半双工 (Half-Duplex)</b> — 双向但不能同时，如对讲机</span><span class="en"><b>Half-Duplex</b> — Both directions but not simultaneously, e.g. walkie-talkie</span></div>
+<div class="item" data-keywords="<b>全双工 (Full-Duplex)</b> — 同时双向，如电话 <b>Full-Duplex</b> — Simultaneous bidirectional, e.g. telephone"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>全双工 (Full-Duplex)</b> — 同时双向，如电话</span><span class="en"><b>Full-Duplex</b> — Simultaneous bidirectional, e.g. telephone</span></div></div></div>
+<div class="section"><div class="section-title">信道分类 <span style="font-weight:400;color:var(--muted);font-size:13px;">Channel Classification</span></div><div class="items"><div class="item" data-keywords="<b>有线信道</b> — 双绞线、同轴电缆、光纤 <b>Guided/Wired</b> — Twisted pair, coaxial cable, optical fibre"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>有线信道</b> — 双绞线、同轴电缆、光纤</span><span class="en"><b>Guided/Wired</b> — Twisted pair, coaxial cable, optical fibre</span></div>
+<div class="item" data-keywords="<b>无线信道</b> — 无线电波自由传播 <b>Wireless/Free propagation</b> — Radio waves through free space"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>无线信道</b> — 无线电波自由传播</span><span class="en"><b>Wireless/Free propagation</b> — Radio waves through free space</span></div>
+<div class="item" data-keywords="电话信道：带通 300–3400 Hz，SNR ~30 dB Telephone channel: bandpass 300–3400 Hz, SNR ~30 dB"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn">电话信道：带通 300–3400 Hz，SNR ~30 dB</span><span class="en">Telephone channel: bandpass 300–3400 Hz, SNR ~30 dB</span></div>
+<div class="item" data-keywords="光纤优势：高带宽、低衰减、抗电磁干扰、无串扰 Fibre advantages: high BW, low attenuation, immune to EMI, no crosstalk"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn">光纤优势：高带宽、低衰减、抗电磁干扰、无串扰</span><span class="en">Fibre advantages: high BW, low attenuation, immune to EMI, no crosstalk</span></div></div></div>
+<div class="section"><div class="section-title">信道损伤 <span style="font-weight:400;color:var(--muted);font-size:13px;">Channel Impairments</span></div><div class="items"><div class="item" data-keywords="<b>衰减 (Attenuation)</b> — 信号功率随距离降低 <b>Attenuation</b> — Signal power decreases with distance"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>衰减 (Attenuation)</b> — 信号功率随距离降低</span><span class="en"><b>Attenuation</b> — Signal power decreases with distance</span></div>
+<div class="item" data-keywords="<b>失真 (Distortion)</b> — 不同频率分量传播速度不同导致信号变形 <b>Distortion</b> — Different frequency components have different propagation speeds"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>失真 (Distortion)</b> — 不同频率分量传播速度不同导致信号变形</span><span class="en"><b>Distortion</b> — Different frequency components have different propagation speeds</span></div>
+<div class="item" data-keywords="<b>噪声 (Noise)</b> — 热噪声、感应噪声、串扰、脉冲噪声 <b>Noise</b> — Thermal, induced, crosstalk, impulse noise"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>噪声 (Noise)</b> — 热噪声、感应噪声、串扰、脉冲噪声</span><span class="en"><b>Noise</b> — Thermal, induced, crosstalk, impulse noise</span></div></div></div>
+<div class="section"><div class="section-title">信号类型 <span style="font-weight:400;color:var(--muted);font-size:13px;">Signal Types</span></div><div class="items"><div class="item" data-keywords="<b>模拟信号</b> — 时间和幅度均连续，如语音、正弦波 <b>Analogue Signal</b> — Continuous in both time and amplitude"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>模拟信号</b> — 时间和幅度均连续，如语音、正弦波</span><span class="en"><b>Analogue Signal</b> — Continuous in both time and amplitude</span></div>
+<div class="item" data-keywords="<b>数字信号</b> — 时间连续但幅度离散，使用有限符号集 <b>Digital Signal</b> — Continuous in time, discrete in amplitude"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>数字信号</b> — 时间连续但幅度离散，使用有限符号集</span><span class="en"><b>Digital Signal</b> — Continuous in time, discrete in amplitude</span></div>
+<div class="item" data-keywords="<b>周期信号</b> — s(t+T)=s(t)，T为周期 <b>Periodic Signal</b> — s(t+T)=s(t), T = period"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>周期信号</b> — s(t+T)=s(t)，T为周期</span><span class="en"><b>Periodic Signal</b> — s(t+T)=s(t), T = period</span></div>
+<div class="item" data-keywords="<b>非周期信号</b> — 不重复 <b>Aperiodic Signal</b> — Does not repeat"><span class="check" onclick="toggleCheck(this)" data-chapter="lec1"></span><span class="cn"><b>非周期信号</b> — 不重复</span><span class="en"><b>Aperiodic Signal</b> — Does not repeat</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">分贝 (Decibel)</div><div>$$\text{dB} = 10\log_{10}\frac{P_2}{P_1}$$</div></div>
+<div class="formula-card"><div class="fname">信噪比 (SNR)</div><div>$$\text{SNR} = \frac{P_{\text{signal}}}{P_{\text{noise}}},\quad \text{SNR}_{\text{dB}} = 10\log_{10}(\text{SNR})$$</div></div>
+<div class="formula-card"><div class="fname">正弦波 (Sine Wave)</div><div>$$y(t) = A\sin(2\pi f t + \varphi)$$</div></div>
+<div class="formula-card"><div class="fname">周期-频率关系</div><div>$$T = \frac{1}{f},\quad f = \frac{1}{T}$$</div></div>
+<div class="formula-card"><div class="fname">n比特字母表大小</div><div>$$\text{Alphabet size} = 2^n$$</div></div></div>
+</section>
+<section class="chapter" id="lec2">
+<div class="chapter-header"><span class="chapter-tag">第2课 Lecture 2</span>
+<h2 class="chapter-title">📊 信号与传输</h2>
+<div class="chapter-subtitle">Signals and Transmission</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>深入理解信号的时域与频域特性、信号运算、传输介质、数据速率限制、复用技术和网络性能指标。</p><p style="color:var(--muted)">Deep dive into time/frequency domain concepts, signal operations, transmission media, data rate limits, multiplexing, and network performance metrics.</p></div>
+<div class="section"><div class="section-title">时域概念 <span style="font-weight:400;color:var(--muted);font-size:13px;">Time-Domain Concepts</span></div><div class="items"><div class="item" data-keywords="<b>连续时间信号</b> x(t) — 在每个时刻都有定义 <b>Continuous-time</b> x(t) — defined at every instant of time"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>连续时间信号</b> x(t) — 在每个时刻都有定义</span><span class="en"><b>Continuous-time</b> x(t) — defined at every instant of time</span></div>
+<div class="item" data-keywords="<b>离散时间信号</b> {x[n]} — 仅在离散时刻定义 <b>Discrete-time</b> {x[n]} — defined only at discrete instants"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>离散时间信号</b> {x[n]} — 仅在离散时刻定义</span><span class="en"><b>Discrete-time</b> {x[n]} — defined only at discrete instants</span></div>
+<div class="item" data-keywords="<b>确定信号</b> — 完全可预测，如 sin(4πt) <b>Deterministic</b> — fully specified for all time"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>确定信号</b> — 完全可预测，如 sin(4πt)</span><span class="en"><b>Deterministic</b> — fully specified for all time</span></div>
+<div class="item" data-keywords="<b>随机信号</b> — 不可预测，如热噪声、语音 <b>Random/Stochastic</b> — unpredictable, e.g. thermal noise, speech"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>随机信号</b> — 不可预测，如热噪声、语音</span><span class="en"><b>Random/Stochastic</b> — unpredictable, e.g. thermal noise, speech</span></div>
+<div class="item" data-keywords="<b>偶信号</b> x(t)=x(-t)；<b>奇信号</b> x(t)=-x(-t) <b>Even</b> x(t)=x(-t); <b>Odd</b> x(t)=-x(-t)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>偶信号</b> x(t)=x(-t)；<b>奇信号</b> x(t)=-x(-t)</span><span class="en"><b>Even</b> x(t)=x(-t); <b>Odd</b> x(t)=-x(-t)</span></div>
+<div class="item" data-keywords="任意信号 = 偶部 + 奇部：x(t)=[x(t)+x(-t)]/2 + [x(t)-x(-t)]/2 Any signal = even + odd part"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn">任意信号 = 偶部 + 奇部：x(t)=[x(t)+x(-t)]/2 + [x(t)-x(-t)]/2</span><span class="en">Any signal = even + odd part</span></div></div></div>
+<div class="section"><div class="section-title">信号运算 <span style="font-weight:400;color:var(--muted);font-size:13px;">Signal Operations</span></div><div class="items"><div class="item" data-keywords="<b>时移</b> x(t-t₀)：t₀>0 延迟(右移)，t₀<0 提前(左移) <b>Time shifting</b> x(t-t₀): delay (t₀>0) or advance (t₀<0)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>时移</b> x(t-t₀)：t₀>0 延迟(右移)，t₀<0 提前(左移)</span><span class="en"><b>Time shifting</b> x(t-t₀): delay (t₀>0) or advance (t₀<0)</span></div>
+<div class="item" data-keywords="<b>时间缩放</b> x(at)：a>1 压缩，0&lt;a&lt;1 展宽 <b>Time scaling</b> x(at): compression (a>1) or expansion (0<a<1)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>时间缩放</b> x(at)：a>1 压缩，0&lt;a&lt;1 展宽</span><span class="en"><b>Time scaling</b> x(at): compression (a>1) or expansion (0<a<1)</span></div>
+<div class="item" data-keywords="<b>时移+缩放</b> x(at-b)：先移后缩 or 先缩后移 <b>Combined</b> x(at-b): shift then scale, or scale then shift"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>时移+缩放</b> x(at-b)：先移后缩 or 先缩后移</span><span class="en"><b>Combined</b> x(at-b): shift then scale, or scale then shift</span></div></div></div>
+<div class="section"><div class="section-title">频域概念 <span style="font-weight:400;color:var(--muted);font-size:13px;">Frequency-Domain Concepts</span></div><div class="items"><div class="item" data-keywords="<b>傅里叶理论</b>：任何周期函数 = 不同频率正弦/余弦的加权和 <b>Fourier</b>: Any periodic function = weighted sum of sines and cosines"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>傅里叶理论</b>：任何周期函数 = 不同频率正弦/余弦的加权和</span><span class="en"><b>Fourier</b>: Any periodic function = weighted sum of sines and cosines</span></div>
+<div class="item" data-keywords="方波近似：f(t) = (4/π)Σ sin((2n-1)πt)/(2n-1) Square wave: f(t) = (4/π)Σ sin((2n-1)πt)/(2n-1)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn">方波近似：f(t) = (4/π)Σ sin((2n-1)πt)/(2n-1)</span><span class="en">Square wave: f(t) = (4/π)Σ sin((2n-1)πt)/(2n-1)</span></div>
+<div class="item" data-keywords="<b>频谱 (Spectrum)</b> — 信号包含的频率范围 <b>Spectrum</b> — range of frequencies a signal contains"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>频谱 (Spectrum)</b> — 信号包含的频率范围</span><span class="en"><b>Spectrum</b> — range of frequencies a signal contains</span></div>
+<div class="item" data-keywords="<b>绝对带宽</b> — 频谱总宽度；<b>有效带宽</b> — 包含大部分能量的窄带 <b>Absolute BW</b> vs <b>Effective BW</b> — total width vs narrow band with most energy"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>绝对带宽</b> — 频谱总宽度；<b>有效带宽</b> — 包含大部分能量的窄带</span><span class="en"><b>Absolute BW</b> vs <b>Effective BW</b> — total width vs narrow band with most energy</span></div></div></div>
+<div class="section"><div class="section-title">传输介质 <span style="font-weight:400;color:var(--muted);font-size:13px;">Transmission Media</span></div><div class="items"><div class="item" data-keywords="<b>无线电波</b> 3kHz–1GHz：全向、可穿墙，用于广播和移动通信 <b>Radio waves</b> 3kHz–1GHz: omni-directional, penetrate walls"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>无线电波</b> 3kHz–1GHz：全向、可穿墙，用于广播和移动通信</span><span class="en"><b>Radio waves</b> 3kHz–1GHz: omni-directional, penetrate walls</span></div>
+<div class="item" data-keywords="<b>微波</b> 1–300GHz：定向、视距传输，用于卫星和WLAN <b>Microwaves</b> 1–300GHz: unidirectional, line-of-sight"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>微波</b> 1–300GHz：定向、视距传输，用于卫星和WLAN</span><span class="en"><b>Microwaves</b> 1–300GHz: unidirectional, line-of-sight</span></div>
+<div class="item" data-keywords="<b>红外</b>：短距离、不穿墙，如遥控器 <b>Infrared</b>: short-range, cannot penetrate walls, remote controls"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>红外</b>：短距离、不穿墙，如遥控器</span><span class="en"><b>Infrared</b>: short-range, cannot penetrate walls, remote controls</span></div>
+<div class="item" data-keywords="<b>光纤</b>：带宽可达铜线的1000倍，基于全内反射 <b>Fibre optic</b>: up to 1000× copper BW, total internal reflection"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>光纤</b>：带宽可达铜线的1000倍，基于全内反射</span><span class="en"><b>Fibre optic</b>: up to 1000× copper BW, total internal reflection</span></div></div></div>
+<div class="section"><div class="section-title">数据速率限制 <span style="font-weight:400;color:var(--muted);font-size:13px;">Data Rate Limits</span></div><div class="items"><div class="item" data-keywords="<b>奈奎斯特 (无噪声)</b>：BitRate = 2B·log₂(L) <b>Nyquist (noiseless)</b>: BitRate = 2B·log₂(L)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>奈奎斯特 (无噪声)</b>：BitRate = 2B·log₂(L)</span><span class="en"><b>Nyquist (noiseless)</b>: BitRate = 2B·log₂(L)</span></div>
+<div class="item" data-keywords="<b>香农 (有噪声)</b>：C = B·log₂(1+SNR) <b>Shannon (noisy)</b>: C = B·log₂(1+SNR)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>香农 (有噪声)</b>：C = B·log₂(1+SNR)</span><span class="en"><b>Shannon (noisy)</b>: C = B·log₂(1+SNR)</span></div>
+<div class="item" data-keywords="极噪信道：SNR→0，C=B·log₂(1)=0，无法通信 Extremely noisy channel: SNR→0 → C=0, no communication possible"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn">极噪信道：SNR→0，C=B·log₂(1)=0，无法通信</span><span class="en">Extremely noisy channel: SNR→0 → C=0, no communication possible</span></div>
+<div class="item" data-keywords="电话线示例：B=3000Hz, SNR=3162 → C≈34.9 kbps Telephone line: B=3000Hz, SNR=3162 → C≈34.9 kbps"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn">电话线示例：B=3000Hz, SNR=3162 → C≈34.9 kbps</span><span class="en">Telephone line: B=3000Hz, SNR=3162 → C≈34.9 kbps</span></div></div></div>
+<div class="section"><div class="section-title">网络性能 <span style="font-weight:400;color:var(--muted);font-size:13px;">Network Performance</span></div><div class="items"><div class="item" data-keywords="<b>吞吐量</b> — 实际传输速率（可能远低于理论带宽） <b>Throughput</b> — actual delivered data rate"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>吞吐量</b> — 实际传输速率（可能远低于理论带宽）</span><span class="en"><b>Throughput</b> — actual delivered data rate</span></div>
+<div class="item" data-keywords="<b>延迟</b> = 传播时间 + 传输时间 + 排队时间 + 处理延迟 <b>Latency</b> = propagation + transmission + queuing + processing delay"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>延迟</b> = 传播时间 + 传输时间 + 排队时间 + 处理延迟</span><span class="en"><b>Latency</b> = propagation + transmission + queuing + processing delay</span></div>
+<div class="item" data-keywords="传播时间 = 距离/传播速度；传输时间 = 消息大小/带宽 Propagation time = distance/speed; Transmission time = message size/BW"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn">传播时间 = 距离/传播速度；传输时间 = 消息大小/带宽</span><span class="en">Propagation time = distance/speed; Transmission time = message size/BW</span></div>
+<div class="item" data-keywords="<b>抖动 (Jitter)</b> — 不同数据包延迟的差异，影响实时应用 <b>Jitter</b> — variation in packet delay, affects real-time apps"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>抖动 (Jitter)</b> — 不同数据包延迟的差异，影响实时应用</span><span class="en"><b>Jitter</b> — variation in packet delay, affects real-time apps</span></div>
+<div class="item" data-keywords="<b>带宽-延迟积</b> — 管道「容积」= 带宽 × 延迟 <b>Bandwidth-delay product</b> — volume of the pipe = BW × delay"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>带宽-延迟积</b> — 管道「容积」= 带宽 × 延迟</span><span class="en"><b>Bandwidth-delay product</b> — volume of the pipe = BW × delay</span></div>
+<div class="item" data-keywords="<b>波长</b> λ = vₚ/f <b>Wavelength</b> λ = vₚ/f"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>波长</b> λ = vₚ/f</span><span class="en"><b>Wavelength</b> λ = vₚ/f</span></div></div></div>
+<div class="section"><div class="section-title">复用技术 <span style="font-weight:400;color:var(--muted);font-size:13px;">Multiplexing</span></div><div class="items"><div class="item" data-keywords="<b>FDM 频分复用</b> — 将带宽分为多个子频带，模拟技术 <b>FDM</b> — divide bandwidth into sub-bands, analog technique"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>FDM 频分复用</b> — 将带宽分为多个子频带，模拟技术</span><span class="en"><b>FDM</b> — divide bandwidth into sub-bands, analog technique</span></div>
+<div class="item" data-keywords="<b>TDM 时分复用</b> — 将时间分为时隙，数字技术 <b>TDM</b> — divide time into slots, digital technique"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>TDM 时分复用</b> — 将时间分为时隙，数字技术</span><span class="en"><b>TDM</b> — divide time into slots, digital technique</span></div>
+<div class="item" data-keywords="<b>SDM 空分复用</b> — 同频段在不同物理空间复用 <b>SDM</b> — same frequency in physically separate zones"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>SDM 空分复用</b> — 同频段在不同物理空间复用</span><span class="en"><b>SDM</b> — same frequency in physically separate zones</span></div>
+<div class="item" data-keywords="<b>CDM 码分复用</b> — 所有用户同时同频传输，用伪随机码区分 <b>CDM</b> — all users transmit simultaneously, separated by codes"><span class="check" onclick="toggleCheck(this)" data-chapter="lec2"></span><span class="cn"><b>CDM 码分复用</b> — 所有用户同时同频传输，用伪随机码区分</span><span class="en"><b>CDM</b> — all users transmit simultaneously, separated by codes</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">奈奎斯特速率</div><div>$$\text{BitRate} = 2B\log_2(L)$$</div></div>
+<div class="formula-card"><div class="fname">香农容量</div><div>$$C = B\log_2(1+\text{SNR})$$</div></div>
+<div class="formula-card"><div class="fname">波长</div><div>$$\lambda = \frac{v_p}{f} = v_p T$$</div></div>
+<div class="formula-card"><div class="fname">延迟</div><div>$$\text{Latency} = t_{\text{prop}} + t_{\text{trans}} + t_{\text{queue}} + t_{\text{proc}}$$</div></div>
+<div class="formula-card"><div class="fname">吞吐量计算</div><div>$$\text{Throughput} = \frac{\text{frames/min} \times \text{bits/frame}}{60}$$</div></div></div>
+</section>
+<section class="chapter" id="lec3">
+<div class="chapter-header"><span class="chapter-tag">第3课 Lecture 3</span>
+<h2 class="chapter-title">📡 模拟调制与数字调制基础</h2>
+<div class="chapter-subtitle">Analog & Digital Modulation Basics</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>学习为什么需要调制、三种模拟调制（AM/FM/PM）的原理、AM解调方法，以及数字调制基础（ASK/FSK/PSK）。</p><p style="color:var(--muted)">Learn why modulation is needed, three analog modulation techniques (AM/FM/PM), AM demodulation, and digital modulation basics (ASK/FSK/PSK).</p></div>
+<div class="section"><div class="section-title">为什么需要调制？ <span style="font-weight:400;color:var(--muted);font-size:13px;">Why Modulate?</span></div><div class="items"><div class="item" data-keywords="<b>天线高度问题</b>：音频f=20kHz，λ=c/f=15km，所需天线~1500m（不可行） <b>Antenna height</b>: for f=20kHz, λ=15km, antenna ~1500m (impossible)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>天线高度问题</b>：音频f=20kHz，λ=c/f=15km，所需天线~1500m（不可行）</span><span class="en"><b>Antenna height</b>: for f=20kHz, λ=15km, antenna ~1500m (impossible)</span></div>
+<div class="item" data-keywords="<b>信号混叠</b>：所有音频信号在20Hz–20kHz同频段，直接传输会混在一起 <b>Signal mixing</b>: all audio in same 20Hz–20kHz band would interfere"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>信号混叠</b>：所有音频信号在20Hz–20kHz同频段，直接传输会混在一起</span><span class="en"><b>Signal mixing</b>: all audio in same 20Hz–20kHz band would interfere</span></div>
+<div class="item" data-keywords="<b>辐射效率低</b>：基带音频信号在开放大气中只能传输几米 <b>Poor radiation</b>: baseband audio travels only a few meters"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>辐射效率低</b>：基带音频信号在开放大气中只能传输几米</span><span class="en"><b>Poor radiation</b>: baseband audio travels only a few meters</span></div>
+<div class="item" data-keywords="<b>实现复用</b>：调制后可在同一链路上容纳多用户 <b>Enable multiplexing</b>: multiple users on one link"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>实现复用</b>：调制后可在同一链路上容纳多用户</span><span class="en"><b>Enable multiplexing</b>: multiple users on one link</span></div></div></div>
+<div class="section"><div class="section-title">载波信号 <span style="font-weight:400;color:var(--muted);font-size:13px;">Carrier Signal</span></div><div class="items"><div class="item" data-keywords="c(t) = Vc·cos(2π·fc·t + φ) — 三个可调参数：幅度Vc、频率fc、相位φ c(t) = Vc·cos(2π·fc·t + φ) — three adjustable parameters: Vc, fc, φ"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">c(t) = Vc·cos(2π·fc·t + φ) — 三个可调参数：幅度Vc、频率fc、相位φ</span><span class="en">c(t) = Vc·cos(2π·fc·t + φ) — three adjustable parameters: Vc, fc, φ</span></div></div></div>
+<div class="section"><div class="section-title">幅度调制 AM <span style="font-weight:400;color:var(--muted);font-size:13px;">Amplitude Modulation (AM)</span></div><div class="items"><div class="item" data-keywords="调制信号：am(t) = [Vc + Vm·cos(2π·fm·t)]·cos(2π·fc·t) AM signal: am(t) = [Vc + Vm·cos(2π·fm·t)]·cos(2π·fc·t)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">调制信号：am(t) = [Vc + Vm·cos(2π·fm·t)]·cos(2π·fc·t)</span><span class="en">AM signal: am(t) = [Vc + Vm·cos(2π·fm·t)]·cos(2π·fc·t)</span></div>
+<div class="item" data-keywords="频谱三分量：载波fc、下边带fc–fm、上边带fc+fm Spectrum: carrier fc, LSB fc–fm, USB fc+fm"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">频谱三分量：载波fc、下边带fc–fm、上边带fc+fm</span><span class="en">Spectrum: carrier fc, LSB fc–fm, USB fc+fm</span></div>
+<div class="item" data-keywords="<b>AM带宽</b>：B_AM = 2 × B_message <b>AM Bandwidth</b>: B_AM = 2 × B_message"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>AM带宽</b>：B_AM = 2 × B_message</span><span class="en"><b>AM Bandwidth</b>: B_AM = 2 × B_message</span></div>
+<div class="item" data-keywords="AM电台：530–1700 kHz，每站10 kHz间隔 AM radio: 530–1700 kHz, 10 kHz per station"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">AM电台：530–1700 kHz，每站10 kHz间隔</span><span class="en">AM radio: 530–1700 kHz, 10 kHz per station</span></div>
+<div class="item" data-keywords="<b>解调</b>：包络检波器（二极管检波器） <b>Demodulation</b>: Envelope detector (diode detector)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>解调</b>：包络检波器（二极管检波器）</span><span class="en"><b>Demodulation</b>: Envelope detector (diode detector)</span></div></div></div>
+<div class="section"><div class="section-title">频率调制 FM <span style="font-weight:400;color:var(--muted);font-size:13px;">Frequency Modulation (FM)</span></div><div class="items"><div class="item" data-keywords="瞬时频率随调制信号变化：fi(t) = fc + m(t) Instantaneous frequency: fi(t) = fc + m(t)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">瞬时频率随调制信号变化：fi(t) = fc + m(t)</span><span class="en">Instantaneous frequency: fi(t) = fc + m(t)</span></div>
+<div class="item" data-keywords="<b>FM带宽</b>：B_FM = 2(1+β)B（β通常为4） <b>FM Bandwidth</b>: B_FM = 2(1+β)B (β commonly 4)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>FM带宽</b>：B_FM = 2(1+β)B（β通常为4）</span><span class="en"><b>FM Bandwidth</b>: B_FM = 2(1+β)B (β commonly 4)</span></div>
+<div class="item" data-keywords="FM电台：88–108 MHz，每站200 kHz FM radio: 88–108 MHz, 200 kHz per station"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">FM电台：88–108 MHz，每站200 kHz</span><span class="en">FM radio: 88–108 MHz, 200 kHz per station</span></div>
+<div class="item" data-keywords="100个潜在FM频段，同一区域最多50个同时使用 100 potential FM bands, max 50 simultaneously in one area"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">100个潜在FM频段，同一区域最多50个同时使用</span><span class="en">100 potential FM bands, max 50 simultaneously in one area</span></div></div></div>
+<div class="section"><div class="section-title">相位调制 PM <span style="font-weight:400;color:var(--muted);font-size:13px;">Phase Modulation (PM)</span></div><div class="items"><div class="item" data-keywords="载波相位随调制信号幅度变化，幅度和频率保持不变 Carrier phase follows modulating signal amplitude; amplitude and frequency constant"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">载波相位随调制信号幅度变化，幅度和频率保持不变</span><span class="en">Carrier phase follows modulating signal amplitude; amplitude and frequency constant</span></div>
+<div class="item" data-keywords="<b>PM带宽</b>：B_PM = 2(1+β)B（窄带β≈1，宽带β≈3） <b>PM Bandwidth</b>: B_PM = 2(1+β)B (narrowband β≈1, wideband β≈3)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>PM带宽</b>：B_PM = 2(1+β)B（窄带β≈1，宽带β≈3）</span><span class="en"><b>PM Bandwidth</b>: B_PM = 2(1+β)B (narrowband β≈1, wideband β≈3)</span></div>
+<div class="item" data-keywords="FM和PM统称为<b>角度调制 (Angle Modulation)</b> FM and PM together: <b>Angle Modulation</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">FM和PM统称为<b>角度调制 (Angle Modulation)</b></span><span class="en">FM and PM together: <b>Angle Modulation</b></span></div></div></div>
+<div class="section"><div class="section-title">数字调制基础 <span style="font-weight:400;color:var(--muted);font-size:13px;">Digital Modulation Basics</span></div><div class="items"><div class="item" data-keywords="<b>ASK 振幅键控</b>：改变载波幅度，对噪声最敏感 <b>ASK</b>: vary amplitude; most susceptible to noise"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>ASK 振幅键控</b>：改变载波幅度，对噪声最敏感</span><span class="en"><b>ASK</b>: vary amplitude; most susceptible to noise</span></div>
+<div class="item" data-keywords="<b>FSK 频移键控</b>：改变载波频率，抗噪优于ASK <b>FSK</b>: vary frequency; better than ASK"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>FSK 频移键控</b>：改变载波频率，抗噪优于ASK</span><span class="en"><b>FSK</b>: vary frequency; better than ASK</span></div>
+<div class="item" data-keywords="<b>PSK 相移键控</b>：改变载波相位，性能最佳 <b>PSK</b>: vary phase; best performance"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>PSK 相移键控</b>：改变载波相位，性能最佳</span><span class="en"><b>PSK</b>: vary phase; best performance</span></div>
+<div class="item" data-keywords="可靠性排序：<b>PSK > FSK > ASK</b> Reliability: <b>PSK > FSK > ASK</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn">可靠性排序：<b>PSK > FSK > ASK</b></span><span class="en">Reliability: <b>PSK > FSK > ASK</b></span></div>
+<div class="item" data-keywords="<b>比特率 vs 波特率</b>：N = r × S，r = log₂(L) <b>Bit rate vs Baud rate</b>: N = r × S, r = log₂(L)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>比特率 vs 波特率</b>：N = r × S，r = log₂(L)</span><span class="en"><b>Bit rate vs Baud rate</b>: N = r × S, r = log₂(L)</span></div>
+<div class="item" data-keywords="<b>星座图</b>：在二维平面上表示数字调制信号 <b>Constellation diagram</b>: 2D representation of modulated signal"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>星座图</b>：在二维平面上表示数字调制信号</span><span class="en"><b>Constellation diagram</b>: 2D representation of modulated signal</span></div>
+<div class="item" data-keywords="<b>BPSK</b>：2相位(0°,180°)；<b>QPSK</b>：4相位，2比特/符号 <b>BPSK</b>: 2 phases; <b>QPSK</b>: 4 phases, 2 bits/symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec3"></span><span class="cn"><b>BPSK</b>：2相位(0°,180°)；<b>QPSK</b>：4相位，2比特/符号</span><span class="en"><b>BPSK</b>: 2 phases; <b>QPSK</b>: 4 phases, 2 bits/symbol</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">AM信号 (单音)</div><div>$$am(t) = [V_c + V_m\cos(2\pi f_m t)]\cos(2\pi f_c t)$$</div></div>
+<div class="formula-card"><div class="fname">AM带宽</div><div>$$B_{AM} = 2B_{message}$$</div></div>
+<div class="formula-card"><div class="fname">FM瞬时频率</div><div>$$f_i(t) = f_c + m(t)$$</div></div>
+<div class="formula-card"><div class="fname">FM/PM带宽</div><div>$$B = 2(1+\beta)B_{message}$$</div></div>
+<div class="formula-card"><div class="fname">比特率关系</div><div>$$N = rS,\quad r = \log_2(L)$$</div></div></div>
+</section>
+<section class="chapter" id="lec4">
+<div class="chapter-header"><span class="chapter-tag">第4课 Lecture 4</span>
+<h2 class="chapter-title">🔷 数字调制进阶</h2>
+<div class="chapter-subtitle">Advanced Digital Modulation</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>深入多进制数字调制（M-ary Modulation），理解QAM调制方案，掌握调制阶数与频谱效率的权衡。</p><p style="color:var(--muted)">Deep dive into M-ary digital modulation, understand QAM schemes, and learn the trade-off between modulation order and spectral efficiency.</p></div>
+<div class="section"><div class="section-title">M进制调制 <span style="font-weight:400;color:var(--muted);font-size:13px;">M-ary Modulation</span></div><div class="items"><div class="item" data-keywords="<b>二进制调制</b> (L=2)：每次传1比特 <b>Binary</b> (L=2): 1 bit per symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn"><b>二进制调制</b> (L=2)：每次传1比特</span><span class="en"><b>Binary</b> (L=2): 1 bit per symbol</span></div>
+<div class="item" data-keywords="<b>M进制调制</b>：L = 2ʳ 个符号，每个符号代表 r 比特 <b>M-ary</b>: L = 2ʳ symbols, r = log₂(L) bits per symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn"><b>M进制调制</b>：L = 2ʳ 个符号，每个符号代表 r 比特</span><span class="en"><b>M-ary</b>: L = 2ʳ symbols, r = log₂(L) bits per symbol</span></div>
+<div class="item" data-keywords="比特率 N = r × S = r/Ts（相同带宽下比特率更高） Bit rate N = r × S = r/Ts (higher bit rate within same BW)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">比特率 N = r × S = r/Ts（相同带宽下比特率更高）</span><span class="en">Bit rate N = r × S = r/Ts (higher bit rate within same BW)</span></div></div></div>
+<div class="section"><div class="section-title">M-ASK / M-FSK / M-PSK <span style="font-weight:400;color:var(--muted);font-size:13px;">M-ASK / M-FSK / M-PSK</span></div><div class="items"><div class="item" data-keywords="<b>M-ASK</b>：多个幅度值，每个幅度编码多比特 <b>M-ASK</b>: multiple amplitude levels, each encodes multiple bits"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn"><b>M-ASK</b>：多个幅度值，每个幅度编码多比特</span><span class="en"><b>M-ASK</b>: multiple amplitude levels, each encodes multiple bits</span></div>
+<div class="item" data-keywords="<b>M-FSK</b>：L个不同载波频率，需谨慎选择频率以避免干扰 <b>M-FSK</b>: L different carrier frequencies"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn"><b>M-FSK</b>：L个不同载波频率，需谨慎选择频率以避免干扰</span><span class="en"><b>M-FSK</b>: L different carrier frequencies</span></div>
+<div class="item" data-keywords="<b>QPSK (4-PSK)</b>：4相位，r=2，比特率翻倍或带宽减半 <b>QPSK</b>: 4 phases, r=2, double bit rate or halve bandwidth"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn"><b>QPSK (4-PSK)</b>：4相位，r=2，比特率翻倍或带宽减半</span><span class="en"><b>QPSK</b>: 4 phases, r=2, double bit rate or halve bandwidth</span></div>
+<div class="item" data-keywords="8-PSK：r=3；16-PSK：r=4（相位间隔仅22.5°，易受噪声影响） 8-PSK: r=3; 16-PSK: r=4 (22.5° separation, noise-sensitive)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">8-PSK：r=3；16-PSK：r=4（相位间隔仅22.5°，易受噪声影响）</span><span class="en">8-PSK: r=3; 16-PSK: r=4 (22.5° separation, noise-sensitive)</span></div></div></div>
+<div class="section"><div class="section-title">QAM 正交幅度调制 <span style="font-weight:400;color:var(--muted);font-size:13px;">Quadrature Amplitude Modulation (QAM)</span></div><div class="items"><div class="item" data-keywords="<b>QAM</b>：同时改变幅度和相位 → 在星座图中增加符号间距 <b>QAM</b>: modulate both amplitude and phase → more distance between symbols"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn"><b>QAM</b>：同时改变幅度和相位 → 在星座图中增加符号间距</span><span class="en"><b>QAM</b>: modulate both amplitude and phase → more distance between symbols</span></div>
+<div class="item" data-keywords="s(t) = A_I·cos(2π·fc·t) + A_Q·sin(2π·fc·t) — 同相+正交分量 s(t) = A_I·cos(2π·fc·t) + A_Q·sin(2π·fc·t) — I + Q components"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">s(t) = A_I·cos(2π·fc·t) + A_Q·sin(2π·fc·t) — 同相+正交分量</span><span class="en">s(t) = A_I·cos(2π·fc·t) + A_Q·sin(2π·fc·t) — I + Q components</span></div>
+<div class="item" data-keywords="4QAM = QPSK；8QAM：2幅度×4相位 4QAM = QPSK; 8QAM: 2 amplitudes × 4 phases"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">4QAM = QPSK；8QAM：2幅度×4相位</span><span class="en">4QAM = QPSK; 8QAM: 2 amplitudes × 4 phases</span></div>
+<div class="item" data-keywords="高阶QAM：16-QAM, 64-QAM, 256-QAM（方形星座图网格） Higher-order: 16-QAM, 64-QAM, 256-QAM (square grid constellations)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">高阶QAM：16-QAM, 64-QAM, 256-QAM（方形星座图网格）</span><span class="en">Higher-order: 16-QAM, 64-QAM, 256-QAM (square grid constellations)</span></div>
+<div class="item" data-keywords="64-QAM和256-QAM广泛用于数字有线电视和电缆调制解调器 64-QAM & 256-QAM used in digital cable TV and cable modems"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">64-QAM和256-QAM广泛用于数字有线电视和电缆调制解调器</span><span class="en">64-QAM & 256-QAM used in digital cable TV and cable modems</span></div></div></div>
+<div class="section"><div class="section-title">调制阶数对比 <span style="font-weight:400;color:var(--muted);font-size:13px;">Modulation Order Comparison</span></div><div class="items"><div class="item" data-keywords="BASK/BFSK/BPSK → 1 bit/symbol BASK/BFSK/BPSK → 1 bit/symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">BASK/BFSK/BPSK → 1 bit/symbol</span><span class="en">BASK/BFSK/BPSK → 1 bit/symbol</span></div>
+<div class="item" data-keywords="4-PSK/4-QAM → 2 bits/symbol 4-PSK/4-QAM → 2 bits/symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">4-PSK/4-QAM → 2 bits/symbol</span><span class="en">4-PSK/4-QAM → 2 bits/symbol</span></div>
+<div class="item" data-keywords="8-PSK/8-QAM → 3 bits/symbol 8-PSK/8-QAM → 3 bits/symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">8-PSK/8-QAM → 3 bits/symbol</span><span class="en">8-PSK/8-QAM → 3 bits/symbol</span></div>
+<div class="item" data-keywords="16-QAM → 4 bits/symbol 16-QAM → 4 bits/symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">16-QAM → 4 bits/symbol</span><span class="en">16-QAM → 4 bits/symbol</span></div>
+<div class="item" data-keywords="64-QAM → 6 bits/symbol 64-QAM → 6 bits/symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">64-QAM → 6 bits/symbol</span><span class="en">64-QAM → 6 bits/symbol</span></div>
+<div class="item" data-keywords="256-QAM → 8 bits/symbol 256-QAM → 8 bits/symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">256-QAM → 8 bits/symbol</span><span class="en">256-QAM → 8 bits/symbol</span></div>
+<div class="item" data-keywords="⚠️ L越大，符号间距越小 → 对噪声越敏感 ⚠️ Higher L → closer symbols → more noise-sensitive"><span class="check" onclick="toggleCheck(this)" data-chapter="lec4"></span><span class="cn">⚠️ L越大，符号间距越小 → 对噪声越敏感</span><span class="en">⚠️ Higher L → closer symbols → more noise-sensitive</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">M进制符号数</div><div>$$L = 2^r,\quad r = \log_2(L)$$</div></div>
+<div class="formula-card"><div class="fname">奈奎斯特最大符号率</div><div>$$S_{\max} = 2B$$</div></div>
+<div class="formula-card"><div class="fname">QAM信号</div><div>$$s_i(t) = A_{I,i}\cos(2\pi f_c t) + A_{Q,i}\sin(2\pi f_c t)$$</div></div>
+<div class="formula-card"><div class="fname">M-PSK相位</div><div>$$\phi_i = \frac{2\pi}{L}(i-1) + \text{const}$$</div></div></div>
+</section>
+<section class="chapter" id="lec5">
+<div class="chapter-header"><span class="chapter-tag">第5课 Lecture 5</span>
+<h2 class="chapter-title">🔢 模数转换与数数转换</h2>
+<div class="chapter-subtitle">A/D and D/D Conversion</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>学习PCM脉冲编码调制的三个步骤（采样、量化、编码），Delta调制，线路编码方案，以及并行/串行传输模式。</p><p style="color:var(--muted)">Learn PCM's three steps (sampling, quantization, encoding), Delta modulation, line coding schemes, and parallel/serial transmission modes.</p></div>
+<div class="section"><div class="section-title">PCM 脉冲编码调制 <span style="font-weight:400;color:var(--muted);font-size:13px;">Pulse Code Modulation (PCM)</span></div><div class="items"><div class="item" data-keywords="<b>第1步：采样</b> — 每隔Ts秒采样一次，fs=1/Ts <b>Step 1: Sampling</b> — sample every Ts seconds, fs=1/Ts"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>第1步：采样</b> — 每隔Ts秒采样一次，fs=1/Ts</span><span class="en"><b>Step 1: Sampling</b> — sample every Ts seconds, fs=1/Ts</span></div>
+<div class="item" data-keywords="<b>奈奎斯特定理</b>：fs ≥ 2·fmax（采样率至少为最高频率的两倍） <b>Nyquist Theorem</b>: fs ≥ 2·fmax"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>奈奎斯特定理</b>：fs ≥ 2·fmax（采样率至少为最高频率的两倍）</span><span class="en"><b>Nyquist Theorem</b>: fs ≥ 2·fmax</span></div>
+<div class="item" data-keywords="<b>第2步：量化</b> — 将幅度范围分为L个区间，每个高度Δ <b>Step 2: Quantization</b> — divide amplitude into L zones of height Δ"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>第2步：量化</b> — 将幅度范围分为L个区间，每个高度Δ</span><span class="en"><b>Step 2: Quantization</b> — divide amplitude into L zones of height Δ</span></div>
+<div class="item" data-keywords="Δ = (Vmax–Vmin)/L；nb = log₂(L) 比特/样本 Δ = (Vmax–Vmin)/L; nb = log₂(L) bits/sample"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn">Δ = (Vmax–Vmin)/L；nb = log₂(L) 比特/样本</span><span class="en">Δ = (Vmax–Vmin)/L; nb = log₂(L) bits/sample</span></div>
+<div class="item" data-keywords="<b>量化误差</b>：–Δ/2 ≤ error ≤ Δ/2 <b>Quantization error</b>: –Δ/2 ≤ error ≤ Δ/2"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>量化误差</b>：–Δ/2 ≤ error ≤ Δ/2</span><span class="en"><b>Quantization error</b>: –Δ/2 ≤ error ≤ Δ/2</span></div>
+<div class="item" data-keywords="<b>第3步：编码</b> — 每个样本转换为nb位码字 <b>Step 3: Encoding</b> — each sample → nb-bit code word"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>第3步：编码</b> — 每个样本转换为nb位码字</span><span class="en"><b>Step 3: Encoding</b> — each sample → nb-bit code word</span></div>
+<div class="item" data-keywords="PCM比特率 = fs × nb PCM bit rate = fs × nb"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn">PCM比特率 = fs × nb</span><span class="en">PCM bit rate = fs × nb</span></div>
+<div class="item" data-keywords="<b>PCM信噪比</b>：SNR_dB = 6.02·nb + 1.76 dB <b>PCM SNR</b>: SNR_dB = 6.02·nb + 1.76 dB"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>PCM信噪比</b>：SNR_dB = 6.02·nb + 1.76 dB</span><span class="en"><b>PCM SNR</b>: SNR_dB = 6.02·nb + 1.76 dB</span></div>
+<div class="item" data-keywords="<b>非均匀量化(压扩)</b> — 低幅度区间更小，保持信噪比恒定 <b>Companding</b> — logarithmic spacing, constant SNR across levels"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>非均匀量化(压扩)</b> — 低幅度区间更小，保持信噪比恒定</span><span class="en"><b>Companding</b> — logarithmic spacing, constant SNR across levels</span></div></div></div>
+<div class="section"><div class="section-title">Delta调制 <span style="font-weight:400;color:var(--muted);font-size:13px;">Delta Modulation (DM)</span></div><div class="items"><div class="item" data-keywords="<b>DM</b>：记录与前一个样本的变化（1bit：上升/下降） <b>DM</b>: records change from previous sample (1 bit: up/down)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>DM</b>：记录与前一个样本的变化（1bit：上升/下降）</span><span class="en"><b>DM</b>: records change from previous sample (1 bit: up/down)</span></div>
+<div class="item" data-keywords="<b>DPCM</b>：对差值进行多比特量化，精度更高 <b>DPCM</b>: quantize the difference with multiple bits, higher accuracy"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>DPCM</b>：对差值进行多比特量化，精度更高</span><span class="en"><b>DPCM</b>: quantize the difference with multiple bits, higher accuracy</span></div></div></div>
+<div class="section"><div class="section-title">线路编码 <span style="font-weight:400;color:var(--muted);font-size:13px;">Line Coding</span></div><div class="items"><div class="item" data-keywords="<b>单极性NRZ</b>：有直流分量，无同步 <b>Unipolar NRZ</b>: DC component, no synchronization"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>单极性NRZ</b>：有直流分量，无同步</span><span class="en"><b>Unipolar NRZ</b>: DC component, no synchronization</span></div>
+<div class="item" data-keywords="<b>极性NRZ-L/I</b>：正负电平，NRZ-I遇1翻转 <b>Polar NRZ-L/I</b>: positive/negative levels; NRZ-I inverts on 1"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>极性NRZ-L/I</b>：正负电平，NRZ-I遇1翻转</span><span class="en"><b>Polar NRZ-L/I</b>: positive/negative levels; NRZ-I inverts on 1</span></div>
+<div class="item" data-keywords="<b>RZ归零码</b>：每比特中间归零，解决同步但带宽翻倍 <b>RZ</b>: return to zero mid-bit, solves sync but doubles BW"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>RZ归零码</b>：每比特中间归零，解决同步但带宽翻倍</span><span class="en"><b>RZ</b>: return to zero mid-bit, solves sync but doubles BW</span></div>
+<div class="item" data-keywords="<b>曼彻斯特编码</b>：中间跳变提供同步和数据，用于以太网 <b>Manchester</b>: mid-bit transition, used in Ethernet (IEEE 802.3)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>曼彻斯特编码</b>：中间跳变提供同步和数据，用于以太网</span><span class="en"><b>Manchester</b>: mid-bit transition, used in Ethernet (IEEE 802.3)</span></div>
+<div class="item" data-keywords="<b>差分曼彻斯特</b>：中间跳变仅用于同步；比特开始处有无跳变表示数据 <b>Differential Manchester</b>: mid-bit for sync only; start transition encodes data"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>差分曼彻斯特</b>：中间跳变仅用于同步；比特开始处有无跳变表示数据</span><span class="en"><b>Differential Manchester</b>: mid-bit for sync only; start transition encodes data</span></div>
+<div class="item" data-keywords="<b>双极性AMI</b>：1交替±V，0为0V，无直流分量 <b>Bipolar-AMI</b>: 1 alternates ±V, 0 is 0V, no DC"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>双极性AMI</b>：1交替±V，0为0V，无直流分量</span><span class="en"><b>Bipolar-AMI</b>: 1 alternates ±V, 0 is 0V, no DC</span></div>
+<div class="item" data-keywords="<b>伪三进制</b>：1为0V，0交替±V <b>Pseudoternary</b>: 1 is 0V, 0 alternates ±V"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>伪三进制</b>：1为0V，0交替±V</span><span class="en"><b>Pseudoternary</b>: 1 is 0V, 0 alternates ±V</span></div></div></div>
+<div class="section"><div class="section-title">块编码 <span style="font-weight:400;color:var(--muted);font-size:13px;">Block Coding</span></div><div class="items"><div class="item" data-keywords="<b>4B/5B</b>：4位数据→5位码字（20%开销），配合NRZ-I消除长串零 <b>4B/5B</b>: 4-bit data → 5-bit code (20% overhead), eliminates long zero runs"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>4B/5B</b>：4位数据→5位码字（20%开销），配合NRZ-I消除长串零</span><span class="en"><b>4B/5B</b>: 4-bit data → 5-bit code (20% overhead), eliminates long zero runs</span></div></div></div>
+<div class="section"><div class="section-title">传输模式 <span style="font-weight:400;color:var(--muted);font-size:13px;">Transmission Modes</span></div><div class="items"><div class="item" data-keywords="<b>并行传输</b>：n位同时通过n根线传输，快但成本高 <b>Parallel</b>: n bits simultaneously over n wires; fast but costly"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>并行传输</b>：n位同时通过n根线传输，快但成本高</span><span class="en"><b>Parallel</b>: n bits simultaneously over n wires; fast but costly</span></div>
+<div class="item" data-keywords="<b>串行传输</b>：逐位传输，单通道，成本低 <b>Serial</b>: one bit at a time; single channel; cost-effective"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>串行传输</b>：逐位传输，单通道，成本低</span><span class="en"><b>Serial</b>: one bit at a time; single channel; cost-effective</span></div>
+<div class="item" data-keywords="<b>异步</b>：每字节加起始位(0)和停止位(1)，适合低速 <b>Asynchronous</b>: start/stop bits per byte; ideal for low-speed"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>异步</b>：每字节加起始位(0)和停止位(1)，适合低速</span><span class="en"><b>Asynchronous</b>: start/stop bits per byte; ideal for low-speed</span></div>
+<div class="item" data-keywords="<b>同步</b>：数据组合成帧，无起始/停止位，高速 <b>Synchronous</b>: frames, no start/stop bits; high-speed"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>同步</b>：数据组合成帧，无起始/停止位，高速</span><span class="en"><b>Synchronous</b>: frames, no start/stop bits; high-speed</span></div>
+<div class="item" data-keywords="<b>等时</b>：恒定速率，用于实时音视频 <b>Isochronous</b>: constant rate for real-time audio/video"><span class="check" onclick="toggleCheck(this)" data-chapter="lec5"></span><span class="cn"><b>等时</b>：恒定速率，用于实时音视频</span><span class="en"><b>Isochronous</b>: constant rate for real-time audio/video</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">量化步长</div><div>$$\Delta = \frac{V_{\max} - V_{\min}}{L}$$</div></div>
+<div class="formula-card"><div class="fname">每样本比特数</div><div>$$n_b = \log_2(L)$$</div></div>
+<div class="formula-card"><div class="fname">PCM比特率</div><div>$$\text{Bit rate} = f_s \times n_b$$</div></div>
+<div class="formula-card"><div class="fname">PCM SNR</div><div>$$\text{SNR}_{\text{dB}} = 6.02n_b + 1.76\ \text{dB}$$</div></div>
+<div class="formula-card"><div class="fname">奈奎斯特采样</div><div>$$f_s \ge 2 f_{\max}$$</div></div>
+<div class="formula-card"><div class="fname">NRZ波特率</div><div>$$S = \frac{N}{2}\ \text{Baud}$$</div></div></div>
+</section>
+<section class="chapter" id="lec6">
+<div class="chapter-header"><span class="chapter-tag">第6课 Lecture 6</span>
+<h2 class="chapter-title">📻 广播与多址接入</h2>
+<div class="chapter-subtitle">Broadcasting & Multiple Access</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>了解广播技术的发展历史、AM/FM模拟广播、数字音频广播（DAB）以及移动网络中的多址接入协议（FDMA/TDMA/CDMA）。</p><p style="color:var(--muted)">Explore broadcasting history, AM/FM analog broadcasting, digital audio broadcasting (DAB), and multiple access protocols in mobile networks (FDMA/TDMA/CDMA).</p></div>
+<div class="section"><div class="section-title">广播历史 <span style="font-weight:400;color:var(--muted);font-size:13px;">History of Broadcasting</span></div><div class="items"><div class="item" data-keywords="<b>1901年</b>：马可尼首次跨大西洋无线电传输（莫尔斯电码） <b>1901</b>: Marconi's first transatlantic radio signal (Morse code)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>1901年</b>：马可尼首次跨大西洋无线电传输（莫尔斯电码）</span><span class="en"><b>1901</b>: Marconi's first transatlantic radio signal (Morse code)</span></div>
+<div class="item" data-keywords="<b>1920年代</b>：AM广播进入家庭，开启「广播黄金时代」 <b>1920s</b>: AM broadcasting becomes household medium — "Golden Age of Radio""><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>1920年代</b>：AM广播进入家庭，开启「广播黄金时代」</span><span class="en"><b>1920s</b>: AM broadcasting becomes household medium — "Golden Age of Radio"</span></div>
+<div class="item" data-keywords="<b>1933年</b>：阿姆斯特朗发明FM，消除AM的静态干扰问题 <b>1933</b>: Armstrong invents FM, eliminates AM's static interference"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>1933年</b>：阿姆斯特朗发明FM，消除AM的静态干扰问题</span><span class="en"><b>1933</b>: Armstrong invents FM, eliminates AM's static interference</span></div>
+<div class="item" data-keywords="FM优势：更高音质、无静态干扰、低成本 FM advantages: better quality, no static, low cost"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">FM优势：更高音质、无静态干扰、低成本</span><span class="en">FM advantages: better quality, no static, low cost</span></div></div></div>
+<div class="section"><div class="section-title">AM与FM广播 <span style="font-weight:400;color:var(--muted);font-size:13px;">AM & FM Broadcasting</span></div><div class="items"><div class="item" data-keywords="AM：载波530–1700 kHz，每站10 kHz，需保护带 AM: carrier 530–1700 kHz, 10 kHz/station, guard bands"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">AM：载波530–1700 kHz，每站10 kHz，需保护带</span><span class="en">AM: carrier 530–1700 kHz, 10 kHz/station, guard bands</span></div>
+<div class="item" data-keywords="FM：载波88–108 MHz，每站200 kHz FM: carrier 88–108 MHz, 200 kHz/station"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">FM：载波88–108 MHz，每站200 kHz</span><span class="en">FM: carrier 88–108 MHz, 200 kHz/station</span></div>
+<div class="item" data-keywords="FM在2000年后已比AM更受欢迎 FM became more popular than AM after 2000"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">FM在2000年后已比AM更受欢迎</span><span class="en">FM became more popular than AM after 2000</span></div></div></div>
+<div class="section"><div class="section-title">数字音频 <span style="font-weight:400;color:var(--muted);font-size:13px;">Digital Audio</span></div><div class="items"><div class="item" data-keywords="<b>CD标准</b>：44.1 kHz采样，16bit量化，双声道 → 1.41 Mbps <b>CD standard</b>: 44.1 kHz, 16-bit, 2 channels → 1.41 Mbps"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>CD标准</b>：44.1 kHz采样，16bit量化，双声道 → 1.41 Mbps</span><span class="en"><b>CD standard</b>: 44.1 kHz, 16-bit, 2 channels → 1.41 Mbps</span></div>
+<div class="item" data-keywords="数字音频优势：无累积噪声/失真，可使用信道编码纠错 Digital audio advantage: no accumulated noise/distortion, error correction"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">数字音频优势：无累积噪声/失真，可使用信道编码纠错</span><span class="en">Digital audio advantage: no accumulated noise/distortion, error correction</span></div>
+<div class="item" data-keywords="<b>DAB 数字音频广播</b>：抗噪声和多径衰落能力更强 <b>DAB</b>: more robust against noise and multipath fading"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>DAB 数字音频广播</b>：抗噪声和多径衰落能力更强</span><span class="en"><b>DAB</b>: more robust against noise and multipath fading</span></div>
+<div class="item" data-keywords="DAB频谱效率约为FM的<b>15倍</b> DAB is ~<b>15× more efficient</b> than FM in spectrum use"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">DAB频谱效率约为FM的<b>15倍</b></span><span class="en">DAB is ~<b>15× more efficient</b> than FM in spectrum use</span></div></div></div>
+<div class="section"><div class="section-title">多址接入协议 <span style="font-weight:400;color:var(--muted);font-size:13px;">Multiple Access Protocols</span></div><div class="items"><div class="item" data-keywords="<b>FDMA 频分多址</b>：各站分配专用频带，持续使用；用于卫星通信和2G GSM <b>FDMA</b>: dedicated frequency band per station; used in satellite & 2G GSM"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>FDMA 频分多址</b>：各站分配专用频带，持续使用；用于卫星通信和2G GSM</span><span class="en"><b>FDMA</b>: dedicated frequency band per station; used in satellite & 2G GSM</span></div>
+<div class="item" data-keywords="<b>TDMA 时分多址</b>：各站在分配的时隙中传输；需同步；用于GSM和卫星 <b>TDMA</b>: stations transmit in assigned time slots; needs synchronization"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>TDMA 时分多址</b>：各站在分配的时隙中传输；需同步；用于GSM和卫星</span><span class="en"><b>TDMA</b>: stations transmit in assigned time slots; needs synchronization</span></div>
+<div class="item" data-keywords="<b>CDMA 码分多址</b>：所有站同时同频传输，用正交码区分 <b>CDMA</b>: all stations transmit simultaneously; separated by orthogonal codes"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>CDMA 码分多址</b>：所有站同时同频传输，用正交码区分</span><span class="en"><b>CDMA</b>: all stations transmit simultaneously; separated by orthogonal codes</span></div></div></div>
+<div class="section"><div class="section-title">CDMA原理 <span style="font-weight:400;color:var(--muted);font-size:13px;">CDMA Principles</span></div><div class="items"><div class="item" data-keywords="每站分配唯一的<b>正交码片序列 (Chip Sequence)</b> Each station gets a unique <b>orthogonal chip sequence</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">每站分配唯一的<b>正交码片序列 (Chip Sequence)</b></span><span class="en">Each station gets a unique <b>orthogonal chip sequence</b></span></div>
+<div class="item" data-keywords="码片性质：相同码内积=N，不同码内积=0 Code property: inner product with self = N, with others = 0"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">码片性质：相同码内积=N，不同码内积=0</span><span class="en">Code property: inner product with self = N, with others = 0</span></div>
+<div class="item" data-keywords="数据编码：发0→-1，发1→+1，空闲→0 Data encoding: 0 → -1, 1 → +1, idle → 0"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">数据编码：发0→-1，发1→+1，空闲→0</span><span class="en">Data encoding: 0 → -1, 1 → +1, idle → 0</span></div>
+<div class="item" data-keywords="<b>扩频因子</b> = Tc/Tb（决定同时支持的用户上限） <b>Spreading factor</b> = Tc/Tb (upper limit of simultaneous users)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn"><b>扩频因子</b> = Tc/Tb（决定同时支持的用户上限）</span><span class="en"><b>Spreading factor</b> = Tc/Tb (upper limit of simultaneous users)</span></div>
+<div class="item" data-keywords="CDMA应用：IS-95 (cdmaOne)、CDMA2000 (3G) CDMA applications: IS-95 (cdmaOne), CDMA2000 (3G)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec6"></span><span class="cn">CDMA应用：IS-95 (cdmaOne)、CDMA2000 (3G)</span><span class="en">CDMA applications: IS-95 (cdmaOne), CDMA2000 (3G)</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">CD比特率</div><div>$$\text{Bit rate} = 2 \times 44100 \times 16 = 1.41\ \text{Mb/s}$$</div></div>
+<div class="formula-card"><div class="fname">CDMA内积</div><div>$$c_i \cdot c_j = \begin{cases} N & i=j \\ 0 & i\neq j \end{cases}$$</div></div></div>
+</section>
+<section class="chapter" id="lec7">
+<div class="chapter-header"><span class="chapter-tag">第12课 Lecture 12</span>
+<h2 class="chapter-title">🔟 信息论基础</h2>
+<div class="chapter-subtitle">Information Theory Fundamentals</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>理解信息与数据的本质区别、信息量的数学度量、熵的概念与计算、信源编码定理，以及这些理论基础如何指导数据压缩。</p><p style="color:var(--muted)">Understand the essential difference between data and information, mathematical measurement of information, entropy, source coding theorem, and how these foundations guide data compression.</p></div>
+<div class="section"><div class="section-title">数据 ≠ 信息 <span style="font-weight:400;color:var(--muted);font-size:13px;">Data ≠ Information</span></div><div class="items">
+<div class="item" data-keywords="数据是传递信息的手段；相同的信息可以用不同数量的数据表示 Data is the means by which information is conveyed; same info can use different amounts of data"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">数据是传递信息的手段；相同的信息可以用不同数量的数据表示</span><span class="en">Data is the means by which information is conveyed; same info can use different amounts of data</span></div>
+<div class="item" data-keywords="数据中可能包含与信息无关的元素 → 数据冗余 (Data Redundancy) Data may contain elements that provide no relevant information → Data Redundancy"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">数据中可能包含与信息无关的元素 → 数据冗余 (Data Redundancy)</span><span class="en">Data may contain elements that provide no relevant information → Data Redundancy</span></div>
+<div class="item" data-keywords="压缩比 CR = n₁/n₂；相对冗余 RD = 1 – 1/CR Compression Ratio CR = n₁/n₂; Relative Redundancy RD = 1 – 1/CR"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">压缩比 CR = n₁/n₂；相对冗余 RD = 1 – 1/CR</span><span class="en">Compression Ratio CR = n₁/n₂; Relative Redundancy RD = 1 – 1/CR</span></div>
+<div class="item" data-keywords="示例：'Your wife, Helen, will meet you at Capital Airport in Beijing at 5 minutes past 6:00 pm tomorrow night' 可压缩为 'Helen will meet you at PEK at 6:00 pm' A long message can be shortened significantly while preserving the same information"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">示例：'Your wife, Helen, will meet you at Capital Airport in Beijing at 5 minutes past 6:00 pm tomorrow night' 可压缩为 'Helen will meet you at PEK at 6:00 pm'</span><span class="en">A long message can be shortened significantly while preserving the same information</span></div>
+</div></div>
+<div class="section"><div class="section-title">信息量的度量 <span style="font-weight:400;color:var(--muted);font-size:13px;">Measuring Information Content</span></div><div class="items">
+<div class="item" data-keywords="信息与意外性/不确定性相关：事件概率越低，包含的信息量越大 Information is linked with surprise/uncertainty: lower probability → more information"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">信息与意外性/不确定性相关：事件概率越低，包含的信息量越大</span><span class="en">Information is linked with surprise/uncertainty: lower probability → more information</span></div>
+<div class="item" data-keywords="信息量公式：I(xᵢ) = –log₂(P(xᵢ)) 比特 Information content: I(xᵢ) = –log₂(P(xᵢ)) bits"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">信息量公式：I(xᵢ) = –log₂(P(xᵢ)) 比特</span><span class="en">Information content: I(xᵢ) = –log₂(P(xᵢ)) bits</span></div>
+<div class="item" data-keywords="等概率4种结果：P=0.25，I = –log₂(0.25) = 2 bits 4 equally likely outcomes: I = –log₂(0.25) = 2 bits"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">等概率4种结果：P=0.25，I = –log₂(0.25) = 2 bits</span><span class="en">4 equally likely outcomes: I = –log₂(0.25) = 2 bits</span></div>
+<div class="item" data-keywords="概率0.25的'0'比概率0.75的'1'携带更多信息 A '0' with P=0.25 carries more information than a '1' with P=0.75"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">概率0.25的'0'比概率0.75的'1'携带更多信息</span><span class="en">A '0' with P=0.25 carries more information than a '1' with P=0.75</span></div>
+</div></div>
+<div class="section"><div class="section-title">熵 (Entropy) <span style="font-weight:400;color:var(--muted);font-size:13px;">Entropy</span></div><div class="items">
+<div class="item" data-keywords="熵 H = Σ –P(xᵢ)·log₂(P(xᵢ)) — 每个符号的平均信息量 (weighted average) Entropy H = Σ –P(xᵢ)·log₂(P(xᵢ)) — the weighted average information per symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">熵 H = Σ –P(xᵢ)·log₂(P(xᵢ)) — 每个符号的平均信息量 (weighted average)</span><span class="en">Entropy H = Σ –P(xᵢ)·log₂(P(xᵢ)) — the weighted average information per symbol</span></div>
+<div class="item" data-keywords="熵越低 → 可实现的压缩比越大；低熵数据允许更大的压缩 Lower entropy → larger achievable compression ratio"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">熵越低 → 可实现的压缩比越大；低熵数据允许更大的压缩</span><span class="en">Lower entropy → larger achievable compression ratio</span></div>
+<div class="item" data-keywords="熵是无损压缩的理论极限 — 低于熵则需要有损压缩 Entropy is the theoretical lossless compression limit; below it requires lossy compression"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">熵是无损压缩的理论极限 — 低于熵则需要有损压缩</span><span class="en">Entropy is the theoretical lossless compression limit; below it requires lossy compression</span></div>
+<div class="item" data-keywords="示例：[A,B,B,C,C,C,D,D,D,D]，H ≈ 1.85 bits/symbol（可用2位编码） Example: [A,B,B,C,C,C,D,D,D,D], H ≈ 1.85 bits/symbol (encodable in 2 bits)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">示例：[A,B,B,C,C,C,D,D,D,D]，H ≈ 1.85 bits/symbol（可用2位编码）</span><span class="en">Example: [A,B,B,C,C,C,D,D,D,D], H ≈ 1.85 bits/symbol (encodable in 2 bits)</span></div>
+<div class="item" data-keywords="信息论创始人：克劳德·香农 (Claude Shannon) Founder of Information Theory: Claude Shannon"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">信息论创始人：克劳德·香农 (Claude Shannon)</span><span class="en">Founder of Information Theory: Claude Shannon</span></div>
+</div></div>
+<div class="section"><div class="section-title">数字通信的优缺点 <span style="font-weight:400;color:var(--muted);font-size:13px;">Digital Communication: Pros & Cons</span></div><div class="items">
+<div class="item" data-keywords="易于再生：使用中继器即可恢复原始脉冲信号 Ease of regeneration: repeaters can restore original pulses"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">易于再生：使用中继器即可恢复原始脉冲信号</span><span class="en">Ease of regeneration: repeaters can restore original pulses</span></div>
+<div class="item" data-keywords="抗噪能力强：数字信号更易区分0和1 Noise immunity: easy to differentiate between 0 and 1"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">抗噪能力强：数字信号更易区分0和1</span><span class="en">Noise immunity: easy to differentiate between 0 and 1</span></div>
+<div class="item" data-keywords="易于复用：可同时传输多路信号 Ease of multiplexing: transmit several signals simultaneously"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">易于复用：可同时传输多路信号</span><span class="en">Ease of multiplexing: transmit several signals simultaneously</span></div>
+<div class="item" data-keywords="易于加密：保证安全性和隐私 Ease of encryption: security and privacy guarantee"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">易于加密：保证安全性和隐私</span><span class="en">Ease of encryption: security and privacy guarantee</span></div>
+<div class="item" data-keywords="缺点：需要更大带宽；需要系统同步 Disadvantages: requires more bandwidth; needs system synchronization"><span class="check" onclick="toggleCheck(this)" data-chapter="lec7"></span><span class="cn">缺点：需要更大带宽；需要系统同步</span><span class="en">Disadvantages: requires more bandwidth; needs system synchronization</span></div>
+</div></div>
+<div class="formulas">
+<div class="formula-card"><div class="fname">信息量</div><div>$$I(x_i) = -\log_2(P(x_i))\ \text{bits}$$</div></div>
+<div class="formula-card"><div class="fname">熵 (Entropy)</div><div>$$H = -\sum_{i} P(x_i)\log_2 P(x_i)$$</div></div>
+</div>
+</section>
+<section class="chapter" id="lec8">
+<div class="chapter-header"><span class="chapter-tag">第13课 Lecture 13</span>
+<h2 class="chapter-title">📦 数据压缩技术</h2>
+<div class="chapter-subtitle">Data Compression Techniques</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>深入理解无损压缩的四种核心算法：霍夫曼编码、算术编码、游程编码(RLE)和LZ字典编码，以及它们在不同应用场景中的优劣。</p><p style="color:var(--muted)">Deep dive into four core lossless compression algorithms: Huffman coding, arithmetic coding, run-length encoding (RLE), and Lempel-Ziv dictionary encoding, along with their trade-offs.</p></div>
+<div class="section"><div class="section-title">无损 vs 有损压缩 <span style="font-weight:400;color:var(--muted);font-size:13px;">Lossless vs Lossy Compression</span></div><div class="items">
+<div class="item" data-keywords="无损压缩：文本文件、程序文件 — 信息不能丢失，压缩比通常2:1到8:1 Lossless: text/program files, no info loss acceptable, typical CR 2:1–8:1"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">无损压缩：文本文件、程序文件 — 信息不能丢失，压缩比通常2:1到8:1</span><span class="en">Lossless: text/program files, no info loss acceptable, typical CR 2:1–8:1</span></div>
+<div class="item" data-keywords="有损压缩：图像、视频、音频 — 利用人类感知限制，可丢弃次要信息 Lossy: images/video/audio, exploits human perceptual limits, can discard minor info"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">有损压缩：图像、视频、音频 — 利用人类感知限制，可丢弃次要信息</span><span class="en">Lossy: images/video/audio, exploits human perceptual limits, can discard minor info</span></div>
+<div class="item" data-keywords="有损压缩可实现10:1到50:1的高质量压缩，甚至100–200倍的较低质量 Lossy: 10:1 to 50:1 high quality, up to 100–200× for lower acceptable quality"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">有损压缩可实现10:1到50:1的高质量压缩，甚至100–200倍的较低质量</span><span class="en">Lossy: 10:1 to 50:1 high quality, up to 100–200× for lower acceptable quality</span></div>
+</div></div>
+<div class="section"><div class="section-title">霍夫曼编码 (Huffman) <span style="font-weight:400;color:var(--muted);font-size:13px;">Huffman Coding</span></div><div class="items">
+<div class="item" data-keywords="前缀码：没有任何码字是其他码字的前缀 → 可即时解码 Prefix-free Code: no codeword is prefix of another → instantly decodable"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">前缀码：没有任何码字是其他码字的前缀 → 可即时解码</span><span class="en">Prefix-free Code: no codeword is prefix of another → instantly decodable</span></div>
+<div class="item" data-keywords="基于符号出现频率构建二叉树：高频符号 → 短码，低频符号 → 长码 Builds binary tree from frequencies: high-frequency → short codes; low-frequency → long codes"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">基于符号出现频率构建二叉树：高频符号 → 短码，低频符号 → 长码</span><span class="en">Builds binary tree from frequencies: high-frequency → short codes; low-frequency → long codes</span></div>
+<div class="item" data-keywords="霍夫曼表（编码映射）必须与压缩数据一起传输 Huffman table must be transmitted alongside compressed data"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">霍夫曼表（编码映射）必须与压缩数据一起传输</span><span class="en">Huffman table must be transmitted alongside compressed data</span></div>
+<div class="item" data-keywords="编码：从根出发沿路径读取二进制值；解码：从根出发按bit走分支 Encoding: follow root-to-leaf path; Decoding: traverse tree bit-by-bit from root"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">编码：从根出发沿路径读取二进制值；解码：从根出发按bit走分支</span><span class="en">Encoding: follow root-to-leaf path; Decoding: traverse tree bit-by-bit from root</span></div>
+</div></div>
+<div class="section"><div class="section-title">算术编码 (Arithmetic) <span style="font-weight:400;color:var(--muted);font-size:13px;">Arithmetic Coding</span></div><div class="items">
+<div class="item" data-keywords="将整个消息编码为一个介于[0,��)之间的实数 — 而非逐符号编码 Encodes the entire message as a single real number in [0, 1) — not symbol-by-symbol"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">将整个消息编码为一个介于[0,��)之间的实数 — 而非逐符号编码</span><span class="en">Encodes the entire message as a single real number in [0, 1) — not symbol-by-symbol</span></div>
+<div class="item" data-keywords="按符号概率将[0,1)区间划分为子区间，每处理一个符号就进一步细分 Partition [0,1) by symbol probabilities, then subdivide per symbol processed"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">按符号概率将[0,1)区间划分为子区间，每处理一个符号就进一步细分</span><span class="en">Partition [0,1) by symbol probabilities, then subdivide per symbol processed</span></div>
+<div class="item" data-keywords="示例：R(0.4)、G(0.5)、B(0.1)，编码'GGB'→最终区间[0.825,�.85) Example: R(0.4),G(0.5),B(0.1), encode 'GGB' → final interval [0.825, 0.85)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">示例：R(0.4)、G(0.5)、B(0.1)，编码'GGB'→最终区间[0.825,�.85)</span><span class="en">Example: R(0.4),G(0.5),B(0.1), encode 'GGB' → final interval [0.825, 0.85)</span></div>
+<div class="item" data-keywords="解码是编码的逆过程：根据输入值落在哪个区间决定输出符号 Decoding is reverse: output symbol based on which interval the value falls into"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">解码是编码的逆过程：根据输入值落在哪个区间决定输出符号</span><span class="en">Decoding is reverse: output symbol based on which interval the value falls into</span></div>
+</div></div>
+<div class="section"><div class="section-title">游程编码 (RLE) <span style="font-weight:400;color:var(--muted);font-size:13px;">Run-Length Encoding</span></div><div class="items">
+<div class="item" data-keywords="将连续重复的符号替换为一个符号 + 出现次数 Replace consecutive repeating symbols with one occurrence + count"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">将连续重复的符号替换为一个符号 + 出现次数</span><span class="en">Replace consecutive repeating symbols with one occurrence + count</span></div>
+<div class="item" data-keywords="零抑制 (Zero Suppression)：编码长串二进制流中的连续零 Zero Suppression: encode long runs of zeros in binary streams"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">零抑制 (Zero Suppression)：编码长串二进制流中的连续零</span><span class="en">Zero Suppression: encode long runs of zeros in binary streams</span></div>
+<div class="item" data-keywords="二符号场景：用4位计数器记录交替的0游程和1游程长度 Two-symbol case: 4-bit counts record alternating runs of 0s and 1s"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">二符号场景：用4位计数器记录交替的0游程和1游程长度</span><span class="en">Two-symbol case: 4-bit counts record alternating runs of 0s and 1s</span></div>
+<div class="item" data-keywords="应用广泛：JPEG图像压缩、ITU-T T4 Group 3传真 Widely used: JPEG, ITU-T T4 Group 3 Fax"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">应用广泛：JPEG图像压缩、ITU-T T4 Group 3传真</span><span class="en">Widely used: JPEG, ITU-T T4 Group 3 Fax</span></div>
+</div></div>
+<div class="section"><div class="section-title">LZ字典编码 <span style="font-weight:400;color:var(--muted);font-size:13px;">Lempel-Ziv Dictionary Encoding</span></div><div class="items">
+<div class="item" data-keywords="基于字典的方法：创建已见字符串的表，用索引替代重复字符串 Dictionary-based: create table of seen strings, substitute repeats with indices"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">基于字典的方法：创建已见字符串的表，用索引替代重复字符串</span><span class="en">Dictionary-based: create table of seen strings, substitute repeats with indices</span></div>
+<div class="item" data-keywords="压缩时提取字典中不存在的最短子串，加入字典，用索引替换前缀 Extract shortest substring not in dictionary, add to dictionary, replace prefix with index"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">压缩时提取字典中不存在的最短子串，加入字典，用索引替换前缀</span><span class="en">Extract shortest substring not in dictionary, add to dictionary, replace prefix with index</span></div>
+<div class="item" data-keywords="不是替代统计编码，而是变换：先LZ变换，再统计编码效果更佳 Not a replacement for statistical coding, but a transform: LZ first, then statistical coding"><span class="check" onclick="toggleCheck(this)" data-chapter="lec8"></span><span class="cn">不是替代统计编码，而是变换：先LZ变换，再统计编码效果更佳</span><span class="en">Not a replacement for statistical coding, but a transform: LZ first, then statistical coding</span></div>
+</div></div>
+<div class="formulas">
+<div class="formula-card"><div class="fname">霍夫曼平均码长</div><div>$$\bar{L} = \sum P(x_i) \times l(x_i)$$</div></div>
+<div class="formula-card"><div class="fname">编码效率</div><div>$$\eta = \frac{H}{\bar{L}}$$</div></div>
+</div>
+</section>
+<section class="chapter" id="lec9">
+<div class="chapter-header"><span class="chapter-tag">第14课 Lecture 14</span>
+<h2 class="chapter-title">🖼️ 图像与视频压缩</h2>
+<div class="chapter-subtitle">Image & Video Compression</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>从数字图像的采集与表示出发，深入理解JPEG图像压缩的完整流程（DCT→量化→Zigzag→熵编码），以及MPEG视频压缩中I/P/B帧和GOP结构的设计思想。</p><p style="color:var(--muted)">Starting from digital image acquisition and representation, understand the complete JPEG compression pipeline and MPEG video compression with I/P/B frames.</p></div>
+<div class="section"><div class="section-title">数字图像基础 <span style="font-weight:400;color:var(--muted);font-size:13px;">Digital Image Fundamentals</span></div><div class="items">
+<div class="item" data-keywords="图像模型：f(x,y) = i(x,y)·r(x,y) — 照度 × 反射 Image model: f(x,y) = i(x,y)·r(x,y) — illumination × reflectance"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">图像模型：f(x,y) = i(x,y)·r(x,y) — 照度 × 反射</span><span class="en">Image model: f(x,y) = i(x,y)·r(x,y) — illumination × reflectance</span></div>
+<div class="item" data-keywords="奈奎斯特定理：像素尺寸应小于最细细节的一半 Nyquist theorem: pixel size < half the finest detail"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">奈奎斯特定理：像素尺寸应小于最细细节的一半</span><span class="en">Nyquist theorem: pixel size < half the finest detail</span></div>
+<div class="item" data-keywords="欠采样 → 空间混叠/摩尔纹 (Moiré patterns) Undersampling → spatial aliasing / Moiré patterns"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">欠采样 → 空间混叠/摩尔纹 (Moiré patterns)</span><span class="en">Undersampling → spatial aliasing / Moiré patterns</span></div>
+<div class="item" data-keywords="灰度分辨率：通常2ᴺ个级别，最少32级可接受，过低导致假轮廓 Gray levels: usually 2ᴺ, min 32 acceptable, too low → false contouring"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">灰度分辨率：通常2ᴺ个级别，最少32级可接受，过低导致假轮廓</span><span class="en">Gray levels: usually 2ᴺ, min 32 acceptable, too low → false contouring</span></div>
+<div class="item" data-keywords="位平面：高阶位承载主要结构，低阶位承载细节 Bit-planes: higher-order bits carry main structure, lower-order carry details"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">位平面：高阶位承载主要结构，低阶位承载细节</span><span class="en">Bit-planes: higher-order bits carry main structure, lower-order carry details</span></div>
+</div></div>
+<div class="section"><div class="section-title">图像冗余类型 <span style="font-weight:400;color:var(--muted);font-size:13px;">Image Redundancy Types</span></div><div class="items">
+<div class="item" data-keywords="编码冗余：表示图像的数据未最优利用 Coding redundancy: data representation not optimal"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">编码冗余：表示图像的数据未最优利用</span><span class="en">Coding redundancy: data representation not optimal</span></div>
+<div class="item" data-keywords="像素间冗余：相邻像素高度相关 Interpixel redundancy: adjacent pixels highly correlated"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">像素间冗余：相邻像素高度相关</span><span class="en">Interpixel redundancy: adjacent pixels highly correlated</span></div>
+<div class="item" data-keywords="波段间冗余：彩色图像RGB通道相关 Interband redundancy: RGB color band correlation"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">波段间冗余：彩色图像RGB通道相关</span><span class="en">Interband redundancy: RGB color band correlation</span></div>
+<div class="item" data-keywords="心理视觉冗余：人眼不敏感的信息可丢弃 Psychovisual redundancy: info imperceptible to eye can be discarded"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">心理视觉冗余：人眼不敏感的信息可丢弃</span><span class="en">Psychovisual redundancy: info imperceptible to eye can be discarded</span></div>
+</div></div>
+<div class="section"><div class="section-title">JPEG压缩流程 <span style="font-weight:400;color:var(--muted);font-size:13px;">JPEG Compression Pipeline</span></div><div class="items">
+<div class="item" data-keywords="① 色彩空间转换：RGB→YCbCr，色度下采样(4:2:2或4:2:0) 1. Color conversion: RGB→YCbCr, chroma subsampling (4:2:2 or 4:2:0)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">① 色彩空间转换：RGB→YCbCr，色度下采样(4:2:2或4:2:0)</span><span class="en">1. Color conversion: RGB→YCbCr, chroma subsampling (4:2:2 or 4:2:0)</span></div>
+<div class="item" data-keywords="② DCT变换：8×8块→频域，DC=均值(左上)，63个AC系数 2. DCT: 8×8 blocks→frequency domain, DC=mean, 63 AC coefficients"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">② DCT变换：8×8块→频域，DC=均值(左上)，63个AC系数</span><span class="en">2. DCT: 8×8 blocks→frequency domain, DC=mean, 63 AC coefficients</span></div>
+<div class="item" data-keywords="③ 量化：DCT系数÷量化表，高频用更大量化步长 → 信息损失的主要步骤 3. Quantization: DCT÷Q-table, larger steps at high freq → main lossy step"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">③ 量化：DCT系数÷量化表，高频用更大量化步长 → 信息损失的主要步骤</span><span class="en">3. Quantization: DCT÷Q-table, larger steps at high freq → main lossy step</span></div>
+<div class="item" data-keywords="④ Zigzag扫描：8×8→1×64，低频在前高频在后，便于RLE 4. Zigzag scan: 8×8→1×64, low freq first, facilitates RLE"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">④ Zigzag扫描：8×8→1×64，低频在前高频在后，便于RLE</span><span class="en">4. Zigzag scan: 8×8→1×64, low freq first, facilitates RLE</span></div>
+<div class="item" data-keywords="⑤ 熵编码：DC系数用DPCM，AC系数用RLE+霍夫曼 5. Entropy coding: DC→DPCM, AC→RLE+Huffman"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">⑤ 熵编码：DC系数用DPCM，AC系数用RLE+霍夫曼</span><span class="en">5. Entropy coding: DC→DPCM, AC→RLE+Huffman</span></div>
+</div></div>
+<div class="section"><div class="section-title">MPEG视频压缩 <span style="font-weight:400;color:var(--muted);font-size:13px;">MPEG Video Compression</span></div><div class="items">
+<div class="item" data-keywords="空间冗余：帧内压缩，8×8块DCT（类似JPEG） Spatial: intraframe, 8×8 DCT (JPEG-like)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">空间冗余：帧内压缩，8×8块DCT（类似JPEG）</span><span class="en">Spatial: intraframe, 8×8 DCT (JPEG-like)</span></div>
+<div class="item" data-keywords="时间冗余：帧间压缩，相邻帧高度相似，只传差异 Temporal: interframe, adjacent frames similar, transmit differences"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">时间冗余：帧间压缩，相邻帧高度相似，只传差异</span><span class="en">Temporal: interframe, adjacent frames similar, transmit differences</span></div>
+<div class="item" data-keywords="运动补偿：16×16宏块搜索最佳匹配→传运动矢量+残差 Motion compensation: 16×16 macroblock best match→motion vector + residual"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">运动补偿：16×16宏块搜索最佳匹配→传运动矢量+残差</span><span class="en">Motion compensation: 16×16 macroblock best match→motion vector + residual</span></div>
+<div class="item" data-keywords="I帧 (Intra-coded)：独立编码，中等压缩率，阻止错误传播 I-frames: independently coded, moderate compression, stops error propagation"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">I帧 (Intra-coded)：独立编码，中等压缩率，阻止错误传播</span><span class="en">I-frames: independently coded, moderate compression, stops error propagation</span></div>
+<div class="item" data-keywords="P帧 (Predicted)：前向预测，只存与前一I/P帧的变化，更高压缩 P-frames: forward prediction from previous I/P, higher compression"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">P帧 (Predicted)：前向预测，只存与前一I/P帧的变化，更高压缩</span><span class="en">P-frames: forward prediction from previous I/P, higher compression</span></div>
+<div class="item" data-keywords="B帧 (Bidirectional)：双向预测，参考前后帧，最高压缩率 B-frames: bidirectional prediction, two motion vectors, highest compression"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">B帧 (Bidirectional)：双向预测，参考前后帧，最高压缩率</span><span class="en">B-frames: bidirectional prediction, two motion vectors, highest compression</span></div>
+<div class="item" data-keywords="GOP结构：典型为IBBPBBPBBPBBP，12帧一组 GOP: typical IBBPBBPBBPBBP, 12 frames per group"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">GOP结构：典型为IBBPBBPBBPBBP，12帧一组</span><span class="en">GOP: typical IBBPBBPBBPBBP, 12 frames per group</span></div>
+<div class="item" data-keywords="色度下采样4:2:0：16×16宏块=4Y+1Cb+1Cr Chroma subsampling 4:2:0: 16×16 macroblock = 4Y+1Cb+1Cr"><span class="check" onclick="toggleCheck(this)" data-chapter="lec9"></span><span class="cn">色度下采样4:2:0：16×16宏块=4Y+1Cb+1Cr</span><span class="en">Chroma subsampling 4:2:0: 16×16 macroblock = 4Y+1Cb+1Cr</span></div>
+</div></div>
+<div class="formulas">
+<div class="formula-card"><div class="fname">PSNR</div><div>$$\text{PSNR} = 10\log_{10}\frac{255^2}{\text{MSE}}\ \text{dB}$$</div></div>
+</div>
+</section>
+<section class="chapter" id="lec10">
+<div class="chapter-header"><span class="chapter-tag">第10课 Lecture 10</span>
+<h2 class="chapter-title">🗣️ 语音处理与编码</h2>
+<div class="chapter-subtitle">Speech Processing & Coding</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>从语音产生的生理机制出发，学习语音产生模型、三类语音编码器（波形编码/声码器/混合编码）的原理与特点，以及语音识别(ASR)的基本概念。</p><p style="color:var(--muted)">From speech production physiology, learn speech production models, three types of speech coders (waveform/vocoder/hybrid), and basics of Automatic Speech Recognition (ASR).</p></div>
+<div class="section"><div class="section-title">语音产生机制 <span style="font-weight:400;color:var(--muted);font-size:13px;">Speech Production Physiology</span></div><div class="items">
+<div class="item" data-keywords="呼吸系统：肺和横膈膜产生气流→控制音量和强度 Respiratory: lungs & diaphragm generate airflow → control volume & intensity"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">呼吸系统：肺和横膈膜产生气流→控制音量和强度</span><span class="en">Respiratory: lungs & diaphragm generate airflow → control volume & intensity</span></div>
+<div class="item" data-keywords="发声系统：声带振动产生浊音，频率决定音高 Phonatory: vocal cord vibration → voiced sounds, frequency = pitch"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">发声系统：声带振动产生浊音，频率决定音高</span><span class="en">Phonatory: vocal cord vibration → voiced sounds, frequency = pitch</span></div>
+<div class="item" data-keywords="调音系统：舌、唇、齿、颚塑形声波为语音 Articulatory: tongue, lips, teeth, palate shape sounds into speech"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">调音系统：舌、唇、齿、颚塑形声波为语音</span><span class="en">Articulatory: tongue, lips, teeth, palate shape sounds into speech</span></div>
+<div class="item" data-keywords="清音：声带张开不振动，气流通过狭窄声道产生湍流 Unvoiced: vocal cords open, turbulent airflow through constricted tract"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">清音：声带张开不振动，气流通过狭窄声道产生湍流</span><span class="en">Unvoiced: vocal cords open, turbulent airflow through constricted tract</span></div>
+</div></div>
+<div class="section"><div class="section-title">语音产生模型 <span style="font-weight:400;color:var(--muted);font-size:13px;">Speech Production Models</span></div><div class="items">
+<div class="item" data-keywords="二元激励模型：浊音用周期脉冲串，清音用随机噪声 Binary excitation: periodic pulses (voiced) + random noise (unvoiced)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">二元激励模型：浊音用周期脉冲串，清音用随机噪声</span><span class="en">Binary excitation: periodic pulses (voiced) + random noise (unvoiced)</span></div>
+<div class="item" data-keywords="声道可建模为自适应滤波器，每种语音有其频率响应 Vocal tract modeled as adaptive filter with per-sound frequency response"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">声道可建模为自适应滤波器，每种语音有其频率响应</span><span class="en">Vocal tract modeled as adaptive filter with per-sound frequency response</span></div>
+<div class="item" data-keywords="混合激励模型：更精确，产生混合激励信号，音质更好 Mixed excitation: more accurate hybrid signal, better quality"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">混合激励模型：更精确，产生混合激励信号，音质更好</span><span class="en">Mixed excitation: more accurate hybrid signal, better quality</span></div>
+</div></div>
+<div class="section"><div class="section-title">语音编码器三大类型 <span style="font-weight:400;color:var(--muted);font-size:13px;">Three Types of Speech Coders</span></div><div class="items">
+<div class="item" data-keywords="① 波形编码器：PCM、DPCM、ADPCM、DM、ADM — 还原波形，高质量高码率 Waveform: PCM, DPCM, ADPCM, DM, ADM — preserve waveform, high quality, high bitrate"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">① 波形编码器：PCM、DPCM、ADPCM、DM、ADM — 还原波形，高质量高码率</span><span class="en">Waveform: PCM, DPCM, ADPCM, DM, ADM — preserve waveform, high quality, high bitrate</span></div>
+<div class="item" data-keywords="② 声码器 (Vocoder)：基于模型，分析传输参数→接收端合成 — 极低码率(~2.4kbps)但合成感强 Vocoders: model-based, transmit parameters→synthesize — very low bitrate (~2.4kbps), synthetic quality"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">② 声码器 (Vocoder)：基于模型，分析传输参数→接收端合成 — 极低码率(~2.4kbps)但合成感强</span><span class="en">Vocoders: model-based, transmit parameters→synthesize — very low bitrate (~2.4kbps), synthetic quality</span></div>
+<div class="item" data-keywords="LPC(线性预测编码)是典型的声码器，用自适应滤波器模拟声道 LPC is classic vocoder; adaptive filter for vocal tract"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">LPC(线性预测编码)是典型的声码器，用自适应滤波器模拟声道</span><span class="en">LPC is classic vocoder; adaptive filter for vocal tract</span></div>
+<div class="item" data-keywords="③ 混合编码器：如CELP，用分析-合成(A-b-S)环路优化激励序列，兼顾质量与码率 Hybrid: e.g. CELP, A-b-S optimization loop, balances quality & bitrate"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">③ 混合编码器：如CELP，用分析-合成(A-b-S)环路优化激励序列，兼顾质量与码率</span><span class="en">Hybrid: e.g. CELP, A-b-S optimization loop, balances quality & bitrate</span></div>
+<div class="item" data-keywords="音频质量：CD(0-20kHz) > FM(20Hz-15kHz) > AM(50Hz-7kHz) > 电话(200Hz-3.4kHz) Audio grades: CD > FM > AM > Telephone narrowband"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">音频质量：CD(0-20kHz) > FM(20Hz-15kHz) > AM(50Hz-7kHz) > 电话(200Hz-3.4kHz)</span><span class="en">Audio grades: CD > FM > AM > Telephone narrowband</span></div>
+<div class="item" data-keywords="PCM语音：8000样/秒×8bit=64kbps；CD音频：2ch×44100×16=1.41Mbps PCM voice: 8k×8=64kbps; CD audio: 2×44.1k×16=1.41Mbps"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">PCM语音：8000样/秒×8bit=64kbps；CD音频：2ch×44100×16=1.41Mbps</span><span class="en">PCM voice: 8k×8=64kbps; CD audio: 2×44.1k×16=1.41Mbps</span></div>
+</div></div>
+<div class="section"><div class="section-title">语音识别 (ASR) <span style="font-weight:400;color:var(--muted);font-size:13px;">Automatic Speech Recognition</span></div><div class="items">
+<div class="item" data-keywords="ASR目标：将语音信号准确高效地转换为文字 ASR goal: convert speech to text accurately and efficiently"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">ASR目标：将语音信号准确高效地转换为文字</span><span class="en">ASR goal: convert speech to text accurately and efficiently</span></div>
+<div class="item" data-keywords="孤立词(IW) vs 连续语音(CS)：IW更容易构建 Isolated Word vs Continuous Speech: IW easier to build"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">孤立词(IW) vs 连续语音(CS)：IW更容易构建</span><span class="en">Isolated Word vs Continuous Speech: IW easier to build</span></div>
+<div class="item" data-keywords="说话人依赖(SD) vs 说话人独立(SI)：SD更准但需训练 Speaker Dependent vs Independent: SD more accurate, needs training"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">说话人依赖(SD) vs 说话人独立(SI)：SD更准但需训练</span><span class="en">Speaker Dependent vs Independent: SD more accurate, needs training</span></div>
+<div class="item" data-keywords="端点检测：用短时能量和过零率确定语音起止 Endpoint detection: short-term energy + zero-crossing rate for boundaries"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">端点检测：用短时能量和过零率确定语音起止</span><span class="en">Endpoint detection: short-term energy + zero-crossing rate for boundaries</span></div>
+<div class="item" data-keywords="应用：客服、实时字幕、智能家居、Google语音、Siri Applications: customer service, subtitling, smart home, Google Voice, Siri"><span class="check" onclick="toggleCheck(this)" data-chapter="lec10"></span><span class="cn">应用：客服、实时字幕、智能家居、Google语音、Siri</span><span class="en">Applications: customer service, subtitling, smart home, Google Voice, Siri</span></div>
+</div></div>
+<div class="formulas">
+<div class="formula-card"><div class="fname">PCM 语音码率</div><div>$$\text{Bit rate} = f_s \times n_b = 8000 \times 8 = 64\ \text{kbps}$$</div></div>
+</div>
+</section>
+<section class="chapter" id="lec11">
+<div class="chapter-header"><span class="chapter-tag">第11课 Lecture 11</span>
+<h2 class="chapter-title">✅ 差错控制编码</h2>
+<div class="chapter-subtitle">Error Control Coding</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>学习信道编码的基本原理：分组码的结构与码率、奇偶校验码、汉明距离与纠错能力、CRC循环冗余校验、校验和，以及BER与Eb/N₀的关系。</p><p style="color:var(--muted)">Learn channel coding fundamentals: block codes, parity check, Hamming distance & error correction, CRC, checksum, and BER vs Eb/N₀ relationships.</p></div>
+<div class="section"><div class="section-title">差错控制策略 <span style="font-weight:400;color:var(--muted);font-size:13px;">Error Control Strategies</span></div><div class="items">
+<div class="item" data-keywords="发射机增加冗余比特使接收机能检测和纠正错误 Transmitter adds redundant bits → receiver can detect and correct errors"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">发射机增加冗余比特使接收机能检测和纠正错误</span><span class="en">Transmitter adds redundant bits → receiver can detect and correct errors</span></div>
+<div class="item" data-keywords="ARQ(自动重传请求)：检测到错误→请求重传；适用于低延迟信道 ARQ: detect error→request retransmit; for low-latency channels"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">ARQ(自动重传请求)：检测到错误→请求重传；适用于低延迟信道</span><span class="en">ARQ: detect error→request retransmit; for low-latency channels</span></div>
+<div class="item" data-keywords="FEC(前向纠错)：接收端直接纠错，无需重传；适用于广播和实时应用 FEC: correct errors at receiver; for broadcast & real-time apps"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">FEC(前向纠错)：接收端直接纠错，无需重传；适用于广播和实时应用</span><span class="en">FEC: correct errors at receiver; for broadcast & real-time apps</span></div>
+<div class="item" data-keywords="BSC(二进制对称信道)：0和1等概率出错，各比特错误独立 BSC: equal error probability for 0/1, errors independent"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">BSC(二进制对称信道)：0和1等概率出错，各比特错误独立</span><span class="en">BSC: equal error probability for 0/1, errors independent</span></div>
+</div></div>
+<div class="section"><div class="section-title">分组码 (Block Codes) <span style="font-weight:400;color:var(--muted);font-size:13px;">Block Codes</span></div><div class="items">
+<div class="item" data-keywords="(n,k)分组码：k位数据字→n位码字，n>k (n,k) block code: k-bit dataword→n-bit codeword, n>k"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">(n,k)分组码：k位数据字→n位码字，n>k</span><span class="en">(n,k) block code: k-bit dataword→n-bit codeword, n>k</span></div>
+<div class="item" data-keywords="码率 R = k/n：冗余越高，码率越低，纠错能力越强 Code Rate R = k/n: higher redundancy→lower rate→stronger correction"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">码率 R = k/n：冗余越高，码率越低，纠错能力越强</span><span class="en">Code Rate R = k/n: higher redundancy→lower rate→stronger correction</span></div>
+<div class="item" data-keywords="线性分组码：任意两个有效码字的XOR仍为有效码字 Linear block code: XOR of any two valid codewords is also valid"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">线性分组码：任意两个有效码字的XOR仍为有效码字</span><span class="en">Linear block code: XOR of any two valid codewords is also valid</span></div>
+</div></div>
+<div class="section"><div class="section-title">奇偶校验码 <span style="font-weight:400;color:var(--muted);font-size:13px;">Parity-Check Code</span></div><div class="items">
+<div class="item" data-keywords="最简单的检错码：n=k+1，附加一位使1的个数为偶数(偶校验)或奇数(奇校验) Simplest: n=k+1, extra bit makes even (or odd) number of 1s"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">最简单的检错码：n=k+1，附加一位使1的个数为偶数(偶校验)或奇数(奇校验)</span><span class="en">Simplest: n=k+1, extra bit makes even (or odd) number of 1s</span></div>
+<div class="item" data-keywords="可检测单比特错误和所有奇数个错误 Detects single-bit errors and any odd number of errors"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">可检测单比特错误和所有奇数个错误</span><span class="en">Detects single-bit errors and any odd number of errors</span></div>
+<div class="item" data-keywords="无法检测偶数个错误 — 两个错误可能相互抵消 Cannot detect even number of errors — two errors may cancel"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">无法检测偶数个错误 — 两个错误可能相互抵消</span><span class="en">Cannot detect even number of errors — two errors may cancel</span></div>
+<div class="item" data-keywords="不能定位错误位置→不能纠错 Cannot locate error position→cannot correct"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">不能定位错误位置→不能纠错</span><span class="en">Cannot locate error position→cannot correct</span></div>
+</div></div>
+<div class="section"><div class="section-title">汉明距离 <span style="font-weight:400;color:var(--muted);font-size:13px;">Hamming Distance</span></div><div class="items">
+<div class="item" data-keywords="码字间汉明距离=不同位的数量=XOR结果中1的个数 Hamming distance = number of differing bits = count of 1s in XOR"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">码字间汉明距离=不同位的数量=XOR结果中1的个数</span><span class="en">Hamming distance = number of differing bits = count of 1s in XOR</span></div>
+<div class="item" data-keywords="最小汉明距离 dₘᵢₙ 决定检错和纠错能力 Minimum Hamming distance dₘᵢₙ determines correction capability"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">最小汉明距离 dₘᵢₙ 决定检错和纠错能力</span><span class="en">Minimum Hamming distance dₘᵢₙ determines correction capability</span></div>
+<div class="item" data-keywords="最多可检测错误数：dₘᵢₙ – 1 Max detectable errors: dₘᵢₙ – 1"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">最多可检测错误数：dₘᵢₙ – 1</span><span class="en">Max detectable errors: dₘᵢₙ – 1</span></div>
+<div class="item" data-keywords="最多可纠正错误数：⌊(dₘᵢₙ – 1)/2⌋ Max correctable errors: ⌊(dₘᵢₙ – 1)/2⌋"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">最多可纠正错误数：⌊(dₘᵢₙ – 1)/2⌋</span><span class="en">Max correctable errors: ⌊(dₘᵢₙ – 1)/2⌋</span></div>
+<div class="item" data-keywords="示例：dₘᵢₙ=3的码→可检测≤2个错误，可纠正≤1个错误 Example: dₘᵢₙ=3 code→detect ≤2 errors, correct ≤1 error"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">示例：dₘᵢₙ=3的码→可检测≤2个错误，可纠正≤1个错误</span><span class="en">Example: dₘᵢₙ=3 code→detect ≤2 errors, correct ≤1 error</span></div>
+</div></div>
+<div class="section"><div class="section-title">CRC 循环冗余校验 <span style="font-weight:400;color:var(--muted);font-size:13px;">Cyclic Redundancy Check</span></div><div class="items">
+<div class="item" data-keywords="CRC是循环码的一种：任何码字的循环移位仍是码字 CRC is a cyclic code: any cyclic shift of codeword is also a codeword"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">CRC是循环码的一种：任何码字的循环移位仍是码字</span><span class="en">CRC is a cyclic code: any cyclic shift of codeword is also a codeword</span></div>
+<div class="item" data-keywords="广泛应用于LAN和WAN的高速数据网络 Widely used in high-speed LAN/WAN networks"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">广泛应用于LAN和WAN的高速数据网络</span><span class="en">Widely used in high-speed LAN/WAN networks</span></div>
+<div class="item" data-keywords="发送方：数据(k位)+FCS(n位) = 能被预设除数整除 Sender: data + FCS = divisible by predetermined divisor"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">发送方：数据(k位)+FCS(n位) = 能被预设除数整除</span><span class="en">Sender: data + FCS = divisible by predetermined divisor</span></div>
+<div class="item" data-keywords="接收方：除以相同除数→余数=0则无误；否则丢弃并请求重发 Receiver: divide→remainder 0=OK; otherwise discard & retransmit"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">接收方：除以相同除数→余数=0则无误；否则丢弃并请求重发</span><span class="en">Receiver: divide→remainder 0=OK; otherwise discard & retransmit</span></div>
+<div class="item" data-keywords="优点：支持任意长度消息、极佳检错、硬件实现快速 Advantages: arbitrary length, excellent detection, fast hardware"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">优点：支持任意长度消息、极佳检错、硬件实现快速</span><span class="en">Advantages: arbitrary length, excellent detection, fast hardware</span></div>
+</div></div>
+<div class="section"><div class="section-title">校验和 (Checksum) <span style="font-weight:400;color:var(--muted);font-size:13px;">Checksum</span></div><div class="items">
+<div class="item" data-keywords="将消息分块(通常16位)，求和取反码(1's complement)附在数据后 Split message into 16-bit chunks, sum, append 1's complement"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">将消息分块(通常16位)，求和取反码(1's complement)附在数据后</span><span class="en">Split message into 16-bit chunks, sum, append 1's complement</span></div>
+<div class="item" data-keywords="接收方相加所有块(含校验和)→结果为全1则正确 Receiver sums all chunks (including checksum)→all 1s = correct"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">接收方相加所有块(含校验和)→结果为全1则正确</span><span class="en">Receiver sums all chunks (including checksum)→all 1s = correct</span></div>
+<div class="item" data-keywords="主要用于互联网IP层和TCP/UDP传输层 Mainly used at IP network layer and TCP/UDP transport layer"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">主要用于互联网IP层和TCP/UDP传输层</span><span class="en">Mainly used at IP network layer and TCP/UDP transport layer</span></div>
+</div></div>
+<div class="section"><div class="section-title">误码率 (BER) 与 Eb/N₀ <span style="font-weight:400;color:var(--muted);font-size:13px;">BER vs Eb/N₀</span></div><div class="items">
+<div class="item" data-keywords="BER = 错误比特数/总传输比特数 BER = number of bit errors / total bits transmitted"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">BER = 错误比特数/总传输比特数</span><span class="en">BER = number of bit errors / total bits transmitted</span></div>
+<div class="item" data-keywords="Eb/N₀(每比特能量/噪声功率谱密度)用于公平比较不同方案 Eb/N₀ (energy per bit / noise PSD) for fair comparison across schemes"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">Eb/N₀(每比特能量/噪声功率谱密度)用于公平比较不同方案</span><span class="en">Eb/N₀ (energy per bit / noise PSD) for fair comparison across schemes</span></div>
+<div class="item" data-keywords="BPSK: BER=10⁻⁴ 需要 Eb/N₀≈8.4dB BPSK needs Eb/N₀≈8.4dB for BER=10⁻⁴"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">BPSK: BER=10⁻⁴ 需要 Eb/N₀≈8.4dB</span><span class="en">BPSK needs Eb/N₀≈8.4dB for BER=10⁻⁴</span></div>
+<div class="item" data-keywords="16-QAM: 需要≈12.3dB达到相同BER，但数据率是BPSK的4倍 16-QAM needs ≈12.3dB for same BER, but 4× data rate"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">16-QAM: 需要≈12.3dB达到相同BER，但数据率是BPSK的4倍</span><span class="en">16-QAM needs ≈12.3dB for same BER, but 4× data rate</span></div>
+<div class="item" data-keywords="信道模型：y = hx + n — 乘性衰落 + 加性噪声 Channel model: y = hx + n — multiplicative fading + additive noise"><span class="check" onclick="toggleCheck(this)" data-chapter="lec11"></span><span class="cn">信道模型：y = hx + n — 乘性衰落 + 加性噪声</span><span class="en">Channel model: y = hx + n — multiplicative fading + additive noise</span></div>
+</div></div>
+<div class="formulas">
+<div class="formula-card"><div class="fname">码率</div><div>$$R = \frac{k}{n}$$</div></div>
+<div class="formula-card"><div class="fname">可检测错误</div><div>$$e_{\text{detect}} \le d_{\min} - 1$$</div></div>
+<div class="formula-card"><div class="fname">可纠正错误</div><div>$$e_{\text{correct}} \le \left\lfloor\frac{d_{\min}-1}{2}\right\rfloor$$</div></div>
+<div class="formula-card"><div class="fname">Eb/N₀关系</div><div>$$\frac{E_b}{N_0} = \text{SNR} \times \frac{B}{R_b}$$</div></div>
+</div>
+</section>
+<section class="chapter" id="lec12">
+<div class="chapter-header"><span class="chapter-tag">第12课 Lecture 12</span>
+<h2 class="chapter-title">🔐 密码学与信息安全</h2>
+<div class="chapter-subtitle">Cryptography & Information Security</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>学习现代密码学基本概念：流密码与分组密码、DES/AES加密标准、对称与非对称加密、RSA算法、数字签名和哈希函数。</p><p style="color:var(--muted)">Learn modern cryptography: stream/block ciphers, DES/AES standards, symmetric/asymmetric encryption, RSA, digital signatures, and hash functions.</p></div>
+<div class="section"><div class="section-title">现代密码学基础 <span style="font-weight:400;color:var(--muted);font-size:13px;">Modern Cryptography Fundamentals</span></div><div class="items"><div class="item" data-keywords="消息转换为二进制（ASCII），然后通过密码算法加密 Messages converted to binary (ASCII), then encrypted via cipher algorithms"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn">消息转换为二进制（ASCII），然后通过密码算法加密</span><span class="en">Messages converted to binary (ASCII), then encrypted via cipher algorithms</span></div>
+<div class="item" data-keywords="<b>流密码</b>：逐位或逐字节加密（如一次性密码本） <b>Stream cipher</b>: encrypts one bit/byte at a time (e.g. one-time pad)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>流密码</b>：逐位或逐字节加密（如一次性密码本）</span><span class="en"><b>Stream cipher</b>: encrypts one bit/byte at a time (e.g. one-time pad)</span></div>
+<div class="item" data-keywords="<b>分组密码</b>：将明文分组整体处理（通常64或128位） <b>Block cipher</b>: processes blocks of plaintext (typically 64 or 128 bits)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>分组密码</b>：将明文分组整体处理（通常64或128位）</span><span class="en"><b>Block cipher</b>: processes blocks of plaintext (typically 64 or 128 bits)</span></div>
+<div class="item" data-keywords="模2加(XOR)：0⊕0=0, 1⊕0=1, 0⊕1=1, 1⊕1=0 Modulo-2 addition (XOR): 0⊕0=0, 1⊕0=1, 0⊕1=1, 1⊕1=0"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn">模2加(XOR)：0⊕0=0, 1⊕0=1, 0⊕1=1, 1⊕1=0</span><span class="en">Modulo-2 addition (XOR): 0⊕0=0, 1⊕0=1, 0⊕1=1, 1⊕1=0</span></div></div></div>
+<div class="section"><div class="section-title">分组密码组件 <span style="font-weight:400;color:var(--muted);font-size:13px;">Block Cipher Components</span></div><div class="items"><div class="item" data-keywords="<b>P盒 (置换)</b>：对位进行置换/转置 <b>P-box (Permutation)</b>: transposes bits"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>P盒 (置换)</b>：对位进行置换/转置</span><span class="en"><b>P-box (Permutation)</b>: transposes bits</span></div>
+<div class="item" data-keywords="<b>S盒 (替换)</b>：微型替换密码，输入输出位数可以不同 <b>S-box (Substitution)</b>: miniature substitution cipher"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>S盒 (替换)</b>：微型替换密码，输入输出位数可以不同</span><span class="en"><b>S-box (Substitution)</b>: miniature substitution cipher</span></div>
+<div class="item" data-keywords="<b>XOR运算</b>：大多数分组密码的核心组件 <b>XOR</b>: core component in most block ciphers"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>XOR运算</b>：大多数分组密码的核心组件</span><span class="en"><b>XOR</b>: core component in most block ciphers</span></div>
+<div class="item" data-keywords="<b>循环移位、交换、拆分/合并</b> <b>Circular shift, Swap, Split/Combine</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>循环移位、交换、拆分/合并</b></span><span class="en"><b>Circular shift, Swap, Split/Combine</b></span></div></div></div>
+<div class="section"><div class="section-title">乘积密码 <span style="font-weight:400;color:var(--muted);font-size:13px;">Product Ciphers</span></div><div class="items"><div class="item" data-keywords="<b>扩散 (Diffusion)</b>：隐藏明文与密文的关系 <b>Diffusion</b>: hides plaintext-ciphertext relationship"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>扩散 (Diffusion)</b>：隐藏明文与密文的关系</span><span class="en"><b>Diffusion</b>: hides plaintext-ciphertext relationship</span></div>
+<div class="item" data-keywords="<b>混淆 (Confusion)</b>：隐藏密文与密钥的关系 <b>Confusion</b>: hides ciphertext-key relationship"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>混淆 (Confusion)</b>：隐藏密文与密钥的关系</span><span class="en"><b>Confusion</b>: hides ciphertext-key relationship</span></div>
+<div class="item" data-keywords="通过<b>多轮迭代</b>实现：每轮组合S盒、P盒和其他组件 Achieved through <b>multiple rounds</b>: each round combines S/P-boxes"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn">通过<b>多轮迭代</b>实现：每轮组合S盒、P盒和其他组件</span><span class="en">Achieved through <b>multiple rounds</b>: each round combines S/P-boxes</span></div>
+<div class="item" data-keywords="密钥调度器为每轮生成不同的轮密钥 Key scheduler generates different round keys from cipher key"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn">密钥调度器为每轮生成不同的轮密钥</span><span class="en">Key scheduler generates different round keys from cipher key</span></div></div></div>
+<div class="section"><div class="section-title">DES与AES <span style="font-weight:400;color:var(--muted);font-size:13px;">DES & AES</span></div><div class="items"><div class="item" data-keywords="<b>DES</b>：对称密钥分组密码，NIST发布，16轮加密 <b>DES</b>: symmetric-key block cipher by NIST, 16 rounds"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>DES</b>：对称密钥分组密码，NIST发布，16轮加密</span><span class="en"><b>DES</b>: symmetric-key block cipher by NIST, 16 rounds</span></div>
+<div class="item" data-keywords="<b>三重DES</b>：C = E_K3(D_K2(E_K1(P)))，用三个密钥 <b>Triple DES</b>: C = E_K3(D_K2(E_K1(P))), three keys"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>三重DES</b>：C = E_K3(D_K2(E_K1(P)))，用三个密钥</span><span class="en"><b>Triple DES</b>: C = E_K3(D_K2(E_K1(P))), three keys</span></div>
+<div class="item" data-keywords="<b>AES</b>：取代DES，128位块，128/192/256位密钥 <b>AES</b>: replaces DES, 128-bit blocks, 128/192/256-bit keys"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>AES</b>：取代DES，128位块，128/192/256位密钥</span><span class="en"><b>AES</b>: replaces DES, 128-bit blocks, 128/192/256-bit keys</span></div>
+<div class="item" data-keywords="暴力破解DES需1秒 → AES需<b>149万亿年</b> Brute force DES: 1 sec → AES: <b>149 trillion years</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn">暴力破解DES需1秒 → AES需<b>149万亿年</b></span><span class="en">Brute force DES: 1 sec → AES: <b>149 trillion years</b></span></div></div></div>
+<div class="section"><div class="section-title">对称与非对称加密 <span style="font-weight:400;color:var(--muted);font-size:13px;">Symmetric vs Asymmetric</span></div><div class="items"><div class="item" data-keywords="<b>对称加密</b>：共享一个密钥；快，但密钥分发困难 <b>Symmetric</b>: one shared key; fast, but key distribution is hard"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>对称加密</b>：共享一个密钥；快，但密钥分发困难</span><span class="en"><b>Symmetric</b>: one shared key; fast, but key distribution is hard</span></div>
+<div class="item" data-keywords="<b>非对称加密</b>：公钥+私钥；无需共享私钥，但较慢 <b>Asymmetric</b>: public + private key; no shared secret, but slower"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>非对称加密</b>：公钥+私钥；无需共享私钥，但较慢</span><span class="en"><b>Asymmetric</b>: public + private key; no shared secret, but slower</span></div>
+<div class="item" data-keywords="n个用户：对称需n(n-1)/2个密钥；非对称只需n个 n users: symmetric needs n(n-1)/2 keys; asymmetric needs n"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn">n个用户：对称需n(n-1)/2个密钥；非对称只需n个</span><span class="en">n users: symmetric needs n(n-1)/2 keys; asymmetric needs n</span></div>
+<div class="item" data-keywords="<b>RSA</b>：用于短消息加密、数字签名和身份认证 <b>RSA</b>: used for short messages, digital signatures, authentication"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>RSA</b>：用于短消息加密、数字签名和身份认证</span><span class="en"><b>RSA</b>: used for short messages, digital signatures, authentication</span></div></div></div>
+<div class="section"><div class="section-title">安全服务 <span style="font-weight:400;color:var(--muted);font-size:13px;">Security Services</span></div><div class="items"><div class="item" data-keywords="<b>机密性</b> — 加密保护信息不被未授权访问 <b>Confidentiality</b> — encryption protects from unauthorized access"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>机密性</b> — 加密保护信息不被未授权访问</span><span class="en"><b>Confidentiality</b> — encryption protects from unauthorized access</span></div>
+<div class="item" data-keywords="<b>完整性</b> — 哈希函数/消息摘要确保数据未被篡改 <b>Integrity</b> — hash functions/message digest ensure data not altered"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>完整性</b> — 哈希函数/消息摘要确保数据未被篡改</span><span class="en"><b>Integrity</b> — hash functions/message digest ensure data not altered</span></div>
+<div class="item" data-keywords="<b>认证</b> — MAC和数字签名验证身份 <b>Authentication</b> — MAC and digital signatures verify identity"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>认证</b> — MAC和数字签名验证身份</span><span class="en"><b>Authentication</b> — MAC and digital signatures verify identity</span></div>
+<div class="item" data-keywords="<b>不可否认性</b> — 数字签名防止发送方否认 <b>Non-repudiation</b> — digital signatures prevent denial"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>不可否认性</b> — 数字签名防止发送方否认</span><span class="en"><b>Non-repudiation</b> — digital signatures prevent denial</span></div></div></div>
+<div class="section"><div class="section-title">哈希函数与数字签名 <span style="font-weight:400;color:var(--muted);font-size:13px;">Hash Functions & Digital Signatures</span></div><div class="items"><div class="item" data-keywords="<b>SHA-1</b>：160位哈希值；<b>SHA-2</b>：256/384/512位变体 <b>SHA-1</b>: 160-bit; <b>SHA-2</b>: 256/384/512-bit variants"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>SHA-1</b>：160位哈希值；<b>SHA-2</b>：256/384/512位变体</span><span class="en"><b>SHA-1</b>: 160-bit; <b>SHA-2</b>: 256/384/512-bit variants</span></div>
+<div class="item" data-keywords="<b>数字签名</b>：对消息摘要（哈希）签名，使用非对称密钥 <b>Digital signatures</b>: sign the digest (hash) of message"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn"><b>数字签名</b>：对消息摘要（哈希）签名，使用非对称密钥</span><span class="en"><b>Digital signatures</b>: sign the digest (hash) of message</span></div>
+<div class="item" data-keywords="应用：WhatsApp端到端加密、HTTPS、区块链、VPN Applications: WhatsApp E2E encryption, HTTPS, Blockchain, VPNs"><span class="check" onclick="toggleCheck(this)" data-chapter="lec12"></span><span class="cn">应用：WhatsApp端到端加密、HTTPS、区块链、VPN</span><span class="en">Applications: WhatsApp E2E encryption, HTTPS, Blockchain, VPNs</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">XOR真值表</div><div>$$p \oplus q: 0\oplus0=0,\ 0\oplus1=1,\ 1\oplus0=1,\ 1\oplus1=0$$</div></div>
+<div class="formula-card"><div class="fname">3DES加密</div><div>$$C = E_{K3}(D_{K2}(E_{K1}(P)))$$</div></div>
+<div class="formula-card"><div class="fname">对称密钥数量</div><div>$$\frac{n(n-1)}{2}\ \text{(symmetric)},\quad n\ \text{(asymmetric)}$$</div></div></div>
+</section>
+<section class="chapter" id="lec13">
+<div class="chapter-header"><span class="chapter-tag">第13课 Lecture 13</span>
+<h2 class="chapter-title">🛰 卫星通信</h2>
+<div class="chapter-subtitle">Satellite Communications</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>学习卫星通信的基本原理、发展历史、开普勒定律、卫星轨道分类（GEO/MEO/LEO）及卫星通信系统应用。</p><p style="color:var(--muted)">Learn satellite communication principles, development history, Kepler's laws, orbit classification (GEO/MEO/LEO), and applications.</p></div>
+<div class="section"><div class="section-title">卫星通信基本原理 <span style="font-weight:400;color:var(--muted);font-size:13px;">Satellite Communication Basics</span></div><div class="items"><div class="item" data-keywords="卫星充当空间中的<b>中继器/转发器</b>：接收→放大→重传 Satellites act as <b>repeaters/transponders</b>: receive → amplify → retransmit"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">卫星充当空间中的<b>中继器/转发器</b>：接收→放大→重传</span><span class="en">Satellites act as <b>repeaters/transponders</b>: receive → amplify → retransmit</span></div>
+<div class="item" data-keywords="<b>两大组成部分</b>：空间段（卫星本身）+ 地面段（地面站） <b>Two segments</b>: Space segment (satellites) + Ground segment (ground stations)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>两大组成部分</b>：空间段（卫星本身）+ 地面段（地面站）</span><span class="en"><b>Two segments</b>: Space segment (satellites) + Ground segment (ground stations)</span></div>
+<div class="item" data-keywords="克服地球曲率造成的视距限制，连接远距离地点 Overcomes Earth curvature line-of-sight limitation"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">克服地球曲率造成的视距限制，连接远距离地点</span><span class="en">Overcomes Earth curvature line-of-sight limitation</span></div></div></div>
+<div class="section"><div class="section-title">发展历史 <span style="font-weight:400;color:var(--muted);font-size:13px;">Historical Development</span></div><div class="items"><div class="item" data-keywords="<b>1957 Sputnik 1</b>：首颗人造卫星，83kg，96分钟轨道周期 <b>1957 Sputnik 1</b>: first artificial satellite, 83kg, 96min orbit"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>1957 Sputnik 1</b>：首颗人造卫星，83kg，96分钟轨道周期</span><span class="en"><b>1957 Sputnik 1</b>: first artificial satellite, 83kg, 96min orbit</span></div>
+<div class="item" data-keywords="<b>1962 Telstar</b>：首颗有源通信卫星，跨大西洋电视传输 <b>1962 Telstar</b>: first active comsat, transatlantic TV"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>1962 Telstar</b>：首颗有源通信卫星，跨大西洋电视传输</span><span class="en"><b>1962 Telstar</b>: first active comsat, transatlantic TV</span></div>
+<div class="item" data-keywords="<b>1963 Syncom</b>：首颗地球同步通信卫星 <b>1963 Syncom</b>: first geostationary comsat"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>1963 Syncom</b>：首颗地球同步通信卫星</span><span class="en"><b>1963 Syncom</b>: first geostationary comsat</span></div>
+<div class="item" data-keywords="<b>1965 Intelsat 1「晨鸟」</b>：首颗商业通信卫星，240路语音 <b>1965 Intelsat 1 "Early Bird"</b>: first commercial comsat, 240 voice circuits"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>1965 Intelsat 1「晨鸟」</b>：首颗商业通信卫星，240路语音</span><span class="en"><b>1965 Intelsat 1 "Early Bird"</b>: first commercial comsat, 240 voice circuits</span></div></div></div>
+<div class="section"><div class="section-title">开普勒定律 <span style="font-weight:400;color:var(--muted);font-size:13px;">Kepler's Laws</span></div><div class="items"><div class="item" data-keywords="<b>第一定律</b>：卫星沿椭圆轨道运行，地球在焦点 <b>1st Law</b>: elliptical orbits, Earth at one focus"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>第一定律</b>：卫星沿椭圆轨道运行，地球在焦点</span><span class="en"><b>1st Law</b>: elliptical orbits, Earth at one focus</span></div>
+<div class="item" data-keywords="<b>第二定律</b>：相等时间内扫过相等面积 <b>2nd Law</b>: equal areas in equal time"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>第二定律</b>：相等时间内扫过相等面积</span><span class="en"><b>2nd Law</b>: equal areas in equal time</span></div>
+<div class="item" data-keywords="<b>第三定律</b>：T² ∝ a³（周期平方正比于半长轴立方） <b>3rd Law</b>: T² ∝ a³ (period² proportional to semi-major axis³)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>第三定律</b>：T² ∝ a³（周期平方正比于半长轴立方）</span><span class="en"><b>3rd Law</b>: T² ∝ a³ (period² proportional to semi-major axis³)</span></div></div></div>
+<div class="section"><div class="section-title">轨道分类 <span style="font-weight:400;color:var(--muted);font-size:13px;">Orbit Classification</span></div><div class="items"><div class="item" data-keywords="按形状：<b>圆形、椭圆形</b> By shape: <b>Circular, Elliptical</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">按形状：<b>圆形、椭圆形</b></span><span class="en">By shape: <b>Circular, Elliptical</b></span></div>
+<div class="item" data-keywords="按平面：<b>赤道、极地、倾斜</b> By plane: <b>Equatorial, Polar, Inclined</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">按平面：<b>赤道、极地、倾斜</b></span><span class="en">By plane: <b>Equatorial, Polar, Inclined</b></span></div>
+<div class="item" data-keywords="<b>GEO 地球同步轨道</b>：~35,786 km，24h周期，相对地面静止 <b>GEO</b>: ~35,786 km, 24h period, appears stationary"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>GEO 地球同步轨道</b>：~35,786 km，24h周期，相对地面静止</span><span class="en"><b>GEO</b>: ~35,786 km, 24h period, appears stationary</span></div>
+<div class="item" data-keywords="<b>MEO 中地球轨道</b>：~2,000–35,786 km <b>MEO</b>: ~2,000–35,786 km"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>MEO 中地球轨道</b>：~2,000–35,786 km</span><span class="en"><b>MEO</b>: ~2,000–35,786 km</span></div>
+<div class="item" data-keywords="<b>LEO 低地球轨道</b>：~160–2,000 km <b>LEO</b>: ~160–2,000 km"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn"><b>LEO 低地球轨道</b>：~160–2,000 km</span><span class="en"><b>LEO</b>: ~160–2,000 km</span></div></div></div>
+<div class="section"><div class="section-title">应用 <span style="font-weight:400;color:var(--muted);font-size:13px;">Applications</span></div><div class="items"><div class="item" data-keywords="偏远地区宽带互联网接入 Broadband internet to remote areas"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">偏远地区宽带互联网接入</span><span class="en">Broadband internet to remote areas</span></div>
+<div class="item" data-keywords="全球媒体广播（电视、无线电） Global media broadcasts (TV, radio)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">全球媒体广播（电视、无线电）</span><span class="en">Global media broadcasts (TV, radio)</span></div>
+<div class="item" data-keywords="导航系统（GPS） Navigation systems (GPS)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">导航系统（GPS）</span><span class="en">Navigation systems (GPS)</span></div>
+<div class="item" data-keywords="物联网(IoT)连接 IoT connectivity"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">物联网(IoT)连接</span><span class="en">IoT connectivity</span></div>
+<div class="item" data-keywords="太空太阳能发电（未来潜在应用） Space-based solar power (future potential)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec13"></span><span class="cn">太空太阳能发电（未来潜在应用）</span><span class="en">Space-based solar power (future potential)</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">开普勒第三定律</div><div>$$T^2 \propto a^3$$</div></div>
+<div class="formula-card"><div class="fname">GEO轨道高度</div><div>$$h_{\text{GEO}} \approx 35,\!786\ \text{km}$$</div></div></div>
+</section>
+<section class="chapter" id="lec14">
+<div class="chapter-header"><span class="chapter-tag">第14课 Lecture 14</span>
+<h2 class="chapter-title">️ 卫星导航</h2>
+<div class="chapter-subtitle">Satellite Navigation</div></div>
+<div class="overview-card"><div class="label">📖 概览 Overview</div>
+<p>学习全球导航卫星系统（GNSS）的发展历程，深入理解GPS工作原理（三边测量、授时），掌握GPS信号特性和误差来源。</p><p style="color:var(--muted)">Learn GNSS development history, GPS working principles (trilateration, timing), signal characteristics, and error sources.</p></div>
+<div class="section"><div class="section-title">导航技术演进 <span style="font-weight:400;color:var(--muted);font-size:13px;">Navigation Evolution</span></div><div class="items"><div class="item" data-keywords="地标导航 → 天文导航 → 传感器导航 → 地面无线电导航 → <b>GNSS</b> Landmark → Celestial → Sensors → Ground Radio → <b>GNSS</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">地标导航 → 天文导航 → 传感器导航 → 地面无线电导航 → <b>GNSS</b></span><span class="en">Landmark → Celestial → Sensors → Ground Radio → <b>GNSS</b></span></div></div></div>
+<div class="section"><div class="section-title">全球导航卫星系统 GNSS <span style="font-weight:400;color:var(--muted);font-size:13px;">Global Navigation Satellite Systems</span></div><div class="items"><div class="item" data-keywords="<b>GPS (美国)</b>：24+颗卫星，1993年全面运行 <b>GPS (USA)</b>: 24+ satellites, fully operational 1993"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>GPS (美国)</b>：24+颗卫星，1993年全面运行</span><span class="en"><b>GPS (USA)</b>: 24+ satellites, fully operational 1993</span></div>
+<div class="item" data-keywords="<b>GLONASS (俄罗斯)</b>：21颗卫星，3个轨道面，高纬度性能优 <b>GLONASS (Russia)</b>: 21 satellites, 3 orbital planes, high-latitude optimized"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>GLONASS (俄罗斯)</b>：21颗卫星，3个轨道面，高纬度性能优</span><span class="en"><b>GLONASS (Russia)</b>: 21 satellites, 3 orbital planes, high-latitude optimized</span></div>
+<div class="item" data-keywords="<b>Galileo (欧洲)</b> <b>Galileo (Europe)</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>Galileo (欧洲)</b></span><span class="en"><b>Galileo (Europe)</b></span></div>
+<div class="item" data-keywords="<b>BeiDou/北斗 (中国)</b> <b>BeiDou/COMPASS (China)</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>BeiDou/北斗 (中国)</b></span><span class="en"><b>BeiDou/COMPASS (China)</b></span></div>
+<div class="item" data-keywords="区域系统：<b>QZSS (日本)、NAVIC (印度)</b> Regional: <b>QZSS (Japan), NAVIC/IRNSS (India)</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">区域系统：<b>QZSS (日本)、NAVIC (印度)</b></span><span class="en">Regional: <b>QZSS (Japan), NAVIC/IRNSS (India)</b></span></div></div></div>
+<div class="section"><div class="section-title">GPS工作原理 <span style="font-weight:400;color:var(--muted);font-size:13px;">How GPS Works</span></div><div class="items"><div class="item" data-keywords="<b>三边测量 (Trilateration)</b>：测量与多颗卫星的距离来确定位置 <b>Trilateration</b>: measure distances from multiple satellites"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>三边测量 (Trilateration)</b>：测量与多颗卫星的距离来确定位置</span><span class="en"><b>Trilateration</b>: measure distances from multiple satellites</span></div>
+<div class="item" data-keywords="距离 = 信号传播时间 × 光速 Distance = signal travel time × speed of light"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">距离 = 信号传播时间 × 光速</span><span class="en">Distance = signal travel time × speed of light</span></div>
+<div class="item" data-keywords="需要<b>4颗卫星</b>：3颗定位 + 1颗校正接收机时钟误差 Need <b>4 satellites</b>: 3 for position + 1 for clock correction"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">需要<b>4颗卫星</b>：3颗定位 + 1颗校正接收机时钟误差</span><span class="en">Need <b>4 satellites</b>: 3 for position + 1 for clock correction</span></div>
+<div class="item" data-keywords="卫星上配备<b>原子钟</b>提供精确授时 <b>Atomic clocks</b> on satellites provide precise timing"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">卫星上配备<b>原子钟</b>提供精确授时</span><span class="en"><b>Atomic clocks</b> on satellites provide precise timing</span></div>
+<div class="item" data-keywords="1 μs 授时误差 → 300米定位误差 1 μs timing error → 300m position error"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">1 μs 授时误差 → 300米定位误差</span><span class="en">1 μs timing error → 300m position error</span></div></div></div>
+<div class="section"><div class="section-title">GPS信号特性 <span style="font-weight:400;color:var(--muted);font-size:13px;">GPS Signal Characteristics</span></div><div class="items"><div class="item" data-keywords="卫星距离约<b>22,000 km</b>，发射功率约<b>30W</b> Satellites at ~<b>22,000 km</b>, transmit ~<b>30W</b>"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">卫星距离约<b>22,000 km</b>，发射功率约<b>30W</b></span><span class="en">Satellites at ~<b>22,000 km</b>, transmit ~<b>30W</b></span></div>
+<div class="item" data-keywords="接收功率约<b>10⁻¹⁶ W</b>（低于热噪声！） Received power ~<b>10⁻¹⁶ W</b> (below thermal noise!)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">接收功率约<b>10⁻¹⁶ W</b>（低于热噪声！）</span><span class="en">Received power ~<b>10⁻¹⁶ W</b> (below thermal noise!)</span></div>
+<div class="item" data-keywords="使用<b>扩频技术</b>从噪声中提取信号 Uses <b>spread spectrum</b> techniques to extract signal from noise"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">使用<b>扩频技术</b>从噪声中提取信号</span><span class="en">Uses <b>spread spectrum</b> techniques to extract signal from noise</span></div></div></div>
+<div class="section"><div class="section-title">误差来源 <span style="font-weight:400;color:var(--muted);font-size:13px;">Error Sources</span></div><div class="items"><div class="item" data-keywords="电离层/对流层延迟 Ionosphere/Troposphere delays"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">电离层/对流层延迟</span><span class="en">Ionosphere/Troposphere delays</span></div>
+<div class="item" data-keywords="多路径误差（信号经建筑物反射） Multipath errors (signal bouncing off buildings)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">多路径误差（信号经建筑物反射）</span><span class="en">Multipath errors (signal bouncing off buildings)</span></div>
+<div class="item" data-keywords="卫星时钟和星历误差 Satellite clock and ephemeris errors"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn">卫星时钟和星历误差</span><span class="en">Satellite clock and ephemeris errors</span></div></div></div>
+<div class="section"><div class="section-title">GPS发展里程碑 <span style="font-weight:400;color:var(--muted);font-size:13px;">GPS Milestones</span></div><div class="items"><div class="item" data-keywords="<b>1973</b>：GPS项目构想 <b>1973</b>: GPS conceived"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>1973</b>：GPS项目构想</span><span class="en"><b>1973</b>: GPS conceived</span></div>
+<div class="item" data-keywords="<b>1978</b>：首颗NAVSTAR卫星发射 <b>1978</b>: First NAVSTAR satellite launched"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>1978</b>：首颗NAVSTAR卫星发射</span><span class="en"><b>1978</b>: First NAVSTAR satellite launched</span></div>
+<div class="item" data-keywords="<b>1983</b>：对民用开放 <b>1983</b>: Opened to civilian use"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>1983</b>：对民用开放</span><span class="en"><b>1983</b>: Opened to civilian use</span></div>
+<div class="item" data-keywords="<b>1993</b>：全面运行能力（24颗卫星） <b>1993</b>: Full operational capability (24 satellites)"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>1993</b>：全面运行能力（24颗卫星）</span><span class="en"><b>1993</b>: Full operational capability (24 satellites)</span></div>
+<div class="item" data-keywords="<b>2000</b>：SA选择性可用关闭，民用精度大幅提升 <b>2000</b>: Selective Availability discontinued, civilian accuracy improved"><span class="check" onclick="toggleCheck(this)" data-chapter="lec14"></span><span class="cn"><b>2000</b>：SA选择性可用关闭，民用精度大幅提升</span><span class="en"><b>2000</b>: Selective Availability discontinued, civilian accuracy improved</span></div></div></div>
+<div class="formulas"><div class="formula-card"><div class="fname">距离公式</div><div>$$d = c \times \Delta t$$</div></div>
+<div class="formula-card"><div class="fname">功率衰减</div><div>$$P \propto \frac{1}{d^2}$$</div></div>
+<div class="formula-card"><div class="fname">接收功率</div><div>$$P_{\text{received}} \approx 10^{-16}\ \text{W}$$</div></div></div>
+</section></main>
+<script>
+const STORAGE_KEY = 'comm_sys_progress';
+function loadProgress() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; } }
+function saveProgress(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); updateProgressBar(); }
+
+function toggleCheck(el) {
+    el.classList.toggle('done');
+    let p = loadProgress();
+    let chap = el.dataset.chapter;
+    if (!p[chap]) p[chap] = [];
+    let checks = [...el.parentElement.parentElement.querySelectorAll('.check')];
+    p[chap] = checks.filter(c => c.classList.contains('done')).length;
+    saveProgress(p);
+}
+
+function restoreChecks() {
+    let p = loadProgress();
+    document.querySelectorAll('.check').forEach(el => {
+        let chap = el.dataset.chapter;
+        if (p[chap]) el.classList.add('done'); // simplified
+    });
+    // Better: count-based
+    document.querySelectorAll('.chapter').forEach(ch => {
+        let chapId = ch.id;
+        let checks = ch.querySelectorAll('.check');
+        let done = loadProgress()[chapId] || 0;
+        checks.forEach((c,i) => { if (i < done) c.classList.add('done'); });
+    });
+    updateProgressBar();
+}
+
+function updateProgressBar() {
+    let total = document.querySelectorAll('.check').length;
+    let done = document.querySelectorAll('.check.done').length;
+    document.getElementById('progressFill').style.width = total ? (done/total*100)+'%' : '0%';
+}
+
+function resetProgress() { if(confirm('确定重置所有学习进度？')) { localStorage.removeItem(STORAGE_KEY); document.querySelectorAll('.check').forEach(c=>c.classList.remove('done')); updateProgressBar(); } }
+
+function toggleAllProgress() {
+    let checks = document.querySelectorAll('.check');
+    let allDone = [...checks].every(c => c.classList.contains('done'));
+    checks.forEach(c => allDone ? c.classList.remove('done') : c.classList.add('done'));
+    let p = loadProgress();
+    if (allDone) { Object.keys(p).forEach(k => p[k]=0); }
+    else { document.querySelectorAll('.chapter').forEach(ch => { let cks = ch.querySelectorAll('.check'); p[ch.id] = cks.length; }); }
+    saveProgress(p);
+}
+
+function doSearch() {
+    let q = document.getElementById('searchBox').value.toLowerCase().trim();
+    let items = document.querySelectorAll('.item');
+    let sections = document.querySelectorAll('.section');
+    let chapters = document.querySelectorAll('.chapter');
+    let count = 0;
+    if (!q) {
+        items.forEach(i => i.style.display = '');
+        sections.forEach(s => s.style.display = '');
+        chapters.forEach(c => c.style.display = '');
+        document.getElementById('searchInfo').textContent = '';
+        return;
+    }
+    chapters.forEach(c => { let visible = false;
+        c.querySelectorAll('.item').forEach(it => {
+            let kw = (it.dataset.keywords || '').toLowerCase();
+            if (kw.includes(q)) { it.style.display = ''; count++; visible = true; }
+            else { it.style.display = 'none'; }
+        });
+        c.querySelectorAll('.section').forEach(s => {
+            let hasVis = [...s.querySelectorAll('.item')].some(i => i.style.display !== 'none');
+            s.style.display = hasVis ? '' : 'none';
+        });
+        c.style.display = visible ? '' : 'none';
+    });
+    document.getElementById('searchInfo').textContent = `找到 ${count} 个结果 / ${count} results found`;
+}
+
+// Theme
+(function() {
+    let t = localStorage.getItem('comm_sys_theme');
+    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme:dark)').matches)) {
+        document.documentElement.setAttribute('data-theme','dark');
+        document.getElementById('themeBtn').textContent = '☀️ 亮色';
+    }
+})();
+
+function toggleTheme() {
+    let isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    localStorage.setItem('comm_sys_theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeBtn').textContent = isDark ? '🌙 暗色' : '☀️ 亮色';
+}
+
+// Active nav on scroll
+let navLinks = document.querySelectorAll('.chap-link');
+let observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { navLinks.forEach(l => l.classList.toggle('active', l.dataset.target===e.target.id)); } });
+}, {threshold:0.3});
+document.querySelectorAll('.chapter').forEach(c => observer.observe(c));
+
+restoreChecks();
+</script>
+</body></html>
